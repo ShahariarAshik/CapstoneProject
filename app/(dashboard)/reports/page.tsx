@@ -1,0 +1,5 @@
+// app/(dashboard)/reports/page.tsx
+
+export default function ReportsPage() {
+  return <h1 className="text-2xl font-semibold">Reports</h1>;
+}
