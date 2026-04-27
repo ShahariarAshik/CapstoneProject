@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { name: "Home", href: "/" },
-  { name: "Reports", href: "/reports" },
-  { name: "Matches", href: "/matches" },
-  { name: "Leagues", href: "/leagues" },
-  { name: "Jobs", href: "/jobs" },
+  { name: "Home", href: "/dashboard" },
+  { name: "Reports", href: "/dashboard/reports" },
+  { name: "Matches", href: "/dashboard/matches" },
+  { name: "Leagues", href: "/dashboard/leagues" },
+  { name: "Jobs", href: "/dashboard/jobs" },
 ];
 
 export default function Sidebar() {
