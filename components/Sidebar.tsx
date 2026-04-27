@@ -16,15 +16,10 @@ export default function Sidebar() {
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      
-     
       <div className="p-6 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-800">
-          Dribl
-        </h1>
+        <h1 className="text-xl font-bold text-gray-800">Dribl</h1>
       </div>
 
-      
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
@@ -46,7 +41,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      
       <div className="p-4 border-t border-gray-100 text-sm text-gray-500">
         © {new Date().getFullYear()}
       </div>
