@@ -1,43 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type League = {
   id: number;
   name: string;
   leagueId: string;
   season: string;
-  matches: number;
-  status: "Ongoing" | "Completed";
+  matches: number | string;
+  status: "Ongoing" | "Completed" | "No Data";
 };
 
 export default function LeaguesPage() {
-  const leagues: League[] = [
-    { id: 1, name: "A-League Men", leagueId: "ALM001", season: "2025/26", matches: 120, status: "Ongoing" },
-    { id: 2, name: "A-League Women", leagueId: "ALW002", season: "2025/26", matches: 90, status: "Ongoing" },
-    { id: 3, name: "National Premier League NSW", leagueId: "NPL003", season: "2025", matches: 150, status: "Completed" },
-    { id: 4, name: "NPL Victoria", leagueId: "NPL004", season: "2025", matches: 140, status: "Completed" },
-    { id: 5, name: "Queensland Premier League", leagueId: "QPL005", season: "2025", matches: 110, status: "Ongoing" },
-    { id: 6, name: "South Australia NPL", leagueId: "SANPL006", season: "2025", matches: 100, status: "Completed" },
-    { id: 7, name: "Western Australia NPL", leagueId: "WANPL007", season: "2025", matches: 105, status: "Ongoing" },
-    { id: 8, name: "Tasmania NPL", leagueId: "TAS008", season: "2025", matches: 80, status: "Completed" },
-    { id: 9, name: "Northern NSW NPL", leagueId: "NNSW009", season: "2025", matches: 95, status: "Ongoing" },
-    { id: 10, name: "Capital Football NPL", leagueId: "ACT010", season: "2025", matches: 85, status: "Completed" },
-
-    { id: 11, name: "Youth League Australia", leagueId: "YTH011", season: "2025/26", matches: 60, status: "Ongoing" },
-    { id: 12, name: "State League NSW", leagueId: "SLNSW012", season: "2025", matches: 130, status: "Completed" },
-    { id: 13, name: "State League VIC", leagueId: "SLVIC013", season: "2025", matches: 125, status: "Completed" },
-    { id: 14, name: "Brisbane Premier League", leagueId: "BPL014", season: "2025", matches: 115, status: "Ongoing" },
-    { id: 15, name: "Perth Amateur League", leagueId: "PAL015", season: "2025", matches: 95, status: "Completed" },
-    { id: 16, name: "Sydney Amateur League", leagueId: "SAL016", season: "2025", matches: 140, status: "Ongoing" },
-    { id: 17, name: "Melbourne Amateur League", leagueId: "MAL017", season: "2025", matches: 135, status: "Completed" },
-    { id: 18, name: "Darwin Premier League", leagueId: "DPL018", season: "2025", matches: 75, status: "Ongoing" },
-    { id: 19, name: "Canberra Premier League", leagueId: "CPL019", season: "2025", matches: 85, status: "Completed" },
-    { id: 20, name: "Hobart League", leagueId: "HL020", season: "2025", matches: 70, status: "Ongoing" },
-  ];
-
+  const [leagues, setLeagues] = useState<League[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const leaguesPerPage = 10;
+
+  // Fetch API
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/leagues/get-leagues")
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.leagues.map((item: any, index: number) => ({
+          id: index + 1,
+          name: item.league_name,
+          leagueId: item.id,
+          season: "No Data",
+          matches: "No Data",
+          status: "No Data",
+        }));
+        setLeagues(mapped);
+      })
+      .catch((err) => console.error("API error:", err));
+  }, []);
 
   const indexOfLast = currentPage * leaguesPerPage;
   const indexOfFirst = indexOfLast - leaguesPerPage;
@@ -79,7 +74,9 @@ export default function LeaguesPage() {
                     className={`px-2 py-1 rounded text-xs font-medium ${
                       league.status === "Completed"
                         ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                        : league.status === "Ongoing"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-200 text-gray-700"
                     }`}
                   >
                     {league.status}

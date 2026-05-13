@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Match = {
   id: number;
@@ -8,36 +8,61 @@ type Match = {
   awayTeam: string;
   location: string;
   datetime: string;
-  status: "Ongoing" | "Completed" | "Cancelled";
+  status: "Ongoing" | "Completed" | "Cancelled" | "No Data";
 };
 
 export default function MatchesPage() {
-  const matches: Match[] = [
-    { id: 1, homeTeam: "Sydney FC", awayTeam: "Melbourne Victory", location: "Sydney", datetime: "20 Apr 2026, 10:00 AM", status: "Completed" },
-    { id: 2, homeTeam: "Brisbane Roar", awayTeam: "Perth Glory", location: "Brisbane", datetime: "20 Apr 2026, 11:30 AM", status: "Ongoing" },
-    { id: 3, homeTeam: "Adelaide United", awayTeam: "Western Sydney", location: "Adelaide", datetime: "20 Apr 2026, 1:00 PM", status: "Completed" },
-    { id: 4, homeTeam: "Newcastle Jets", awayTeam: "Macarthur FC", location: "Newcastle", datetime: "20 Apr 2026, 2:30 PM", status: "Cancelled" },
-    { id: 5, homeTeam: "Central Coast", awayTeam: "Wellington Phoenix", location: "Gosford", datetime: "20 Apr 2026, 3:00 PM", status: "Completed" },
-    { id: 6, homeTeam: "Melbourne City", awayTeam: "Sydney FC", location: "Melbourne", datetime: "20 Apr 2026, 4:00 PM", status: "Ongoing" },
-    { id: 7, homeTeam: "Perth Glory", awayTeam: "Adelaide United", location: "Perth", datetime: "20 Apr 2026, 5:30 PM", status: "Completed" },
-    { id: 8, homeTeam: "Western United", awayTeam: "Brisbane Roar", location: "Melbourne", datetime: "20 Apr 2026, 6:00 PM", status: "Completed" },
-    { id: 9, homeTeam: "Macarthur FC", awayTeam: "Central Coast", location: "Sydney", datetime: "20 Apr 2026, 7:00 PM", status: "Ongoing" },
-    { id: 10, homeTeam: "Wellington Phoenix", awayTeam: "Newcastle Jets", location: "Wellington", datetime: "20 Apr 2026, 8:00 PM", status: "Completed" },
-
-    { id: 11, homeTeam: "Sydney FC", awayTeam: "Perth Glory", location: "Sydney", datetime: "21 Apr 2026, 10:00 AM", status: "Completed" },
-    { id: 12, homeTeam: "Melbourne Victory", awayTeam: "Brisbane Roar", location: "Melbourne", datetime: "21 Apr 2026, 11:30 AM", status: "Ongoing" },
-    { id: 13, homeTeam: "Adelaide United", awayTeam: "Central Coast", location: "Adelaide", datetime: "21 Apr 2026, 1:00 PM", status: "Completed" },
-    { id: 14, homeTeam: "Newcastle Jets", awayTeam: "Western United", location: "Newcastle", datetime: "21 Apr 2026, 2:30 PM", status: "Cancelled" },
-    { id: 15, homeTeam: "Macarthur FC", awayTeam: "Wellington Phoenix", location: "Sydney", datetime: "21 Apr 2026, 3:00 PM", status: "Completed" },
-    { id: 16, homeTeam: "Melbourne City", awayTeam: "Adelaide United", location: "Melbourne", datetime: "21 Apr 2026, 4:00 PM", status: "Ongoing" },
-    { id: 17, homeTeam: "Perth Glory", awayTeam: "Sydney FC", location: "Perth", datetime: "21 Apr 2026, 5:30 PM", status: "Completed" },
-    { id: 18, homeTeam: "Western Sydney", awayTeam: "Melbourne Victory", location: "Sydney", datetime: "21 Apr 2026, 6:00 PM", status: "Completed" },
-    { id: 19, homeTeam: "Central Coast", awayTeam: "Newcastle Jets", location: "Gosford", datetime: "21 Apr 2026, 7:00 PM", status: "Ongoing" },
-    { id: 20, homeTeam: "Wellington Phoenix", awayTeam: "Macarthur FC", location: "Wellington", datetime: "21 Apr 2026, 8:00 PM", status: "Completed" },
-  ];
-
+  const [matches, setMatches] = useState<Match[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const matchesPerPage = 10;
+
+  // Fetch API
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/fixtures/get-fixtures")
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.fixtures
+          .map((item: any, index: number) => {
+            // ❗ STRICT FILTER: skip if ANY required field missing
+            if (
+              !item.home_team_id ||
+              !item.away_team_id ||
+              !item.ground_id ||
+              !item.utc_datetime
+            ) {
+              return null;
+            }
+
+            const dateObj = new Date(item.utc_datetime);
+
+            // Extra safety: invalid date
+            if (isNaN(dateObj.getTime())) return null;
+
+            const formattedDate = dateObj.toLocaleDateString();
+            const formattedTime = dateObj.toLocaleTimeString();
+
+            return {
+              id: index + 1,
+              homeTeam: item.home_team_id,
+              awayTeam: item.away_team_id,
+              location: item.ground_id,
+              datetime: `${formattedDate}, ${formattedTime} (${item.duration} mins)`,
+              status:
+                item.event_status === "completed"
+                  ? "Completed"
+                  : item.event_status === "ongoing"
+                  ? "Ongoing"
+                  : item.event_status === "cancelled"
+                  ? "Cancelled"
+                  : "No Data",
+            };
+          })
+          .filter(Boolean); // remove nulls
+
+        setMatches(mapped);
+      })
+      .catch((err) => console.error("API error:", err));
+  }, []);
 
   const indexOfLast = currentPage * matchesPerPage;
   const indexOfFirst = indexOfLast - matchesPerPage;
@@ -76,7 +101,6 @@ export default function MatchesPage() {
                   <td className="p-4">{match.awayTeam}</td>
                   <td className="p-4">{match.location}</td>
 
-                  {/* Date + Time Split UI */}
                   <td className="p-4">
                     <div className="text-sm font-medium text-gray-800">
                       {date}
@@ -93,7 +117,9 @@ export default function MatchesPage() {
                           ? "bg-green-100 text-green-700"
                           : match.status === "Ongoing"
                           ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                          : match.status === "Cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-200 text-gray-700"
                       }`}
                     >
                       {match.status}
@@ -114,19 +140,42 @@ export default function MatchesPage() {
 
       {/* Pagination */}
       <div className="flex justify-center mt-6 space-x-2">
-        {[...Array(totalPages)].map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentPage(index + 1)}
-            className={`px-3 py-1 rounded ${
-              currentPage === index + 1
-                ? "bg-gray-900 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            {index + 1}
-          </button>
-        ))}
+        {/* Previous */}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          {"<"}
+        </button>
+
+        {/* Page Numbers */}
+        {[currentPage - 1, currentPage, currentPage + 1]
+          .filter((page) => page > 0 && page <= totalPages)
+          .map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-1 rounded ${
+                currentPage === page
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+        {/* Next */}
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          {">"}
+        </button>
       </div>
     </div>
   );
