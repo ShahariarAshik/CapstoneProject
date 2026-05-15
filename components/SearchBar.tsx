@@ -9,38 +9,52 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export default function SearchBar({ columns, onSearch, placeholder }: SearchBarProps) {
-  const [query, setQuery]             = useState("");
+export default function SearchBar({
+  columns,
+  onSearch,
+  placeholder,
+}: SearchBarProps) {
+  const [query, setQuery] = useState("");
   const [selectedCol, setSelectedCol] = useState(columns[0]);
-  const [open, setOpen]               = useState(false);
-  const dropRef                       = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+      if (dropRef.current && !dropRef.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const handleQuery = (q: string) => { setQuery(q);      onSearch(q, selectedCol); };
-  const handleCol   = (c: string) => { setSelectedCol(c); setOpen(false); onSearch(query, c); };
-  const clear       = ()          => { setQuery("");      onSearch("", selectedCol); };
+  const handleQuery = (q: string) => {
+    setQuery(q);
+    onSearch(q, selectedCol);
+  };
+  const handleCol = (c: string) => {
+    setSelectedCol(c);
+    setOpen(false);
+    onSearch(query, c);
+  };
+  const clear = () => {
+    setQuery("");
+    onSearch("", selectedCol);
+  };
 
   const inputStyle = {
-    background:  "var(--bg-input)",
+    background: "var(--bg-input)",
     borderColor: "var(--border)",
-    color:       "var(--text-1)",
+    color: "var(--text-1)",
   };
 
   const dropStyle = {
-    background:  "var(--bg-surface)",
+    background: "var(--bg-surface)",
     borderColor: "var(--border)",
   };
 
   return (
     <div className="flex items-center gap-2">
-
       {/* Column dropdown */}
       <div className="relative shrink-0" ref={dropRef}>
         <button
@@ -49,7 +63,10 @@ export default function SearchBar({ columns, onSearch, placeholder }: SearchBarP
           style={inputStyle}
         >
           {selectedCol}
-          <ChevronDown size={11} className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown
+            size={11}
+            className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          />
         </button>
 
         {open && (
@@ -64,14 +81,21 @@ export default function SearchBar({ columns, onSearch, placeholder }: SearchBarP
                 className="block w-full text-left px-4 py-2.5 text-xs font-medium transition-colors"
                 style={
                   selectedCol === col
-                    ? { background: "var(--badge-indigo-bg)", color: "var(--badge-indigo-text)" }
+                    ? {
+                        background: "var(--badge-indigo-bg)",
+                        color: "var(--badge-indigo-text)",
+                      }
                     : { color: "var(--text-2)" }
                 }
                 onMouseEnter={(e) => {
-                  if (selectedCol !== col) (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)";
+                  if (selectedCol !== col)
+                    (e.currentTarget as HTMLElement).style.background =
+                      "var(--bg-hover)";
                 }}
                 onMouseLeave={(e) => {
-                  if (selectedCol !== col) (e.currentTarget as HTMLElement).style.background = "transparent";
+                  if (selectedCol !== col)
+                    (e.currentTarget as HTMLElement).style.background =
+                      "transparent";
                 }}
               >
                 {col}
@@ -83,7 +107,11 @@ export default function SearchBar({ columns, onSearch, placeholder }: SearchBarP
 
       {/* Search input */}
       <div className="relative flex-1 min-w-0">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--text-3)" }} />
+        <Search
+          size={13}
+          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: "var(--text-3)" }}
+        />
         <input
           type="text"
           value={query}
@@ -102,7 +130,6 @@ export default function SearchBar({ columns, onSearch, placeholder }: SearchBarP
           </button>
         )}
       </div>
-
     </div>
   );
 }

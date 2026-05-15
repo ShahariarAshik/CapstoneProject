@@ -12,21 +12,29 @@ interface PaginationProps {
 
 function getPageRange(current: number, total: number): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4)         return [1, 2, 3, 4, 5, "…", total];
-  if (current >= total - 3) return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
+  if (current <= 4) return [1, 2, 3, 4, 5, "…", total];
+  if (current >= total - 3)
+    return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
   return [1, "…", current - 1, current, current + 1, "…", total];
 }
 
 export default function Pagination({
-  currentPage, totalPages, onPageChange, totalItems, itemsPerPage,
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalItems,
+  itemsPerPage,
 }: PaginationProps) {
   const [jumpValue, setJumpValue] = useState("");
 
   if (totalPages <= 1) return null;
 
   const pages = getPageRange(currentPage, totalPages);
-  const from  = itemsPerPage ? (currentPage - 1) * itemsPerPage + 1 : undefined;
-  const to    = itemsPerPage && totalItems ? Math.min(currentPage * itemsPerPage, totalItems) : undefined;
+  const from = itemsPerPage ? (currentPage - 1) * itemsPerPage + 1 : undefined;
+  const to =
+    itemsPerPage && totalItems
+      ? Math.min(currentPage * itemsPerPage, totalItems)
+      : undefined;
 
   const go = (p: number) => {
     onPageChange(p);
@@ -43,15 +51,14 @@ export default function Pagination({
   };
 
   const btnBase: React.CSSProperties = {
-    background:  "var(--bg-input)",
+    background: "var(--bg-input)",
     borderColor: "var(--border)",
-    color:       "var(--text-2)",
-    border:      "1px solid var(--border)",
+    color: "var(--text-2)",
+    border: "1px solid var(--border)",
   };
 
   return (
     <div className="mt-6 flex flex-col items-center gap-2">
-
       <div className="flex items-center gap-1">
         {/* Prev */}
         <button
@@ -66,7 +73,11 @@ export default function Pagination({
         {/* Page numbers */}
         {pages.map((page, i) =>
           page === "…" ? (
-            <span key={`el-${i}`} className="w-8 h-8 flex items-center justify-center text-sm select-none" style={{ color: "var(--text-3)" }}>
+            <span
+              key={`el-${i}`}
+              className="w-8 h-8 flex items-center justify-center text-sm select-none"
+              style={{ color: "var(--text-3)" }}
+            >
               ···
             </span>
           ) : (
@@ -76,13 +87,17 @@ export default function Pagination({
               className="w-8 h-8 rounded-lg text-sm font-medium transition-colors"
               style={
                 currentPage === page
-                  ? { background: "#4f46e5", color: "#ffffff", border: "1px solid transparent" }
+                  ? {
+                      background: "#4f46e5",
+                      color: "#ffffff",
+                      border: "1px solid transparent",
+                    }
                   : btnBase
               }
             >
               {page}
             </button>
-          )
+          ),
         )}
 
         {/* Next */}
@@ -96,11 +111,16 @@ export default function Pagination({
         </button>
 
         {/* Divider */}
-        <span className="mx-1 h-4 w-px" style={{ background: "var(--border)" }} />
+        <span
+          className="mx-1 h-4 w-px"
+          style={{ background: "var(--border)" }}
+        />
 
         {/* Jump to page */}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: "var(--text-3)" }}>Go to</span>
+          <span className="text-xs" style={{ color: "var(--text-3)" }}>
+            Go to
+          </span>
           <input
             type="number"
             min={1}
@@ -115,7 +135,11 @@ export default function Pagination({
           <button
             onClick={handleJump}
             className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-            style={{ background: "#4f46e5", color: "#fff", border: "1px solid transparent" }}
+            style={{
+              background: "#4f46e5",
+              color: "#fff",
+              border: "1px solid transparent",
+            }}
           >
             Go
           </button>
@@ -125,10 +149,9 @@ export default function Pagination({
       {/* Count below */}
       {from && to && totalItems && (
         <p className="text-xs" style={{ color: "var(--text-3)" }}>
-          Showing {from}–{to} of {totalItems}
+          Showing {from}-{to} of {totalItems}
         </p>
       )}
-
     </div>
   );
 }

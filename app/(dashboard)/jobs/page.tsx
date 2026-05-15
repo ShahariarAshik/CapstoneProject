@@ -11,8 +11,10 @@ import { validateItems } from "@/lib/validate";
 import type { ValidationReport } from "@/lib/validate";
 import type { Job, JobItem, GetJobsResponse, BadgeColor } from "@/lib/types";
 
-const toneColor   = (t: Job["tone"]): BadgeColor => t === "Serious" ? "indigo" : "amber";
-const statusColor = (s: Job["status"]): BadgeColor => s === "Completed" ? "emerald" : "amber";
+const toneColor = (t: Job["tone"]): BadgeColor =>
+  t === "Serious" ? "indigo" : "amber";
+const statusColor = (s: Job["status"]): BadgeColor =>
+  s === "Completed" ? "emerald" : "amber";
 
 const REQUIRED_FIELDS: (keyof JobItem)[] = [
   "id",
@@ -45,8 +47,13 @@ export default function JobsPage() {
           REQUIRED_FIELDS,
           "/api/report-requests/get-report-requests",
         );
-        if (!report.valid) { setValidationError(report); return; }
-        if (report.empty)  { setValidationError(report); }
+        if (!report.valid) {
+          setValidationError(report);
+          return;
+        }
+        if (report.empty) {
+          setValidationError(report);
+        }
 
         setJobs(
           data.jobs.map((item: JobItem, i: number) => {
@@ -59,7 +66,7 @@ export default function JobsPage() {
               startTime: isNaN(d.getTime())
                 ? item.start_time
                 : d.toLocaleString(),
-              status: item.status === "completed" ? "Completed" : "Ongoing",
+              status: item.status === "completed" ? "Completed" : "Pending",
               progress: item.progress,
             };
           }),
@@ -223,9 +230,7 @@ export default function JobsPage() {
                       {job.reportType}
                     </td>
                     <td className="px-5 py-4">
-                      <Badge color={toneColor(job.tone)}>
-                        {job.tone}
-                      </Badge>
+                      <Badge color={toneColor(job.tone)}>{job.tone}</Badge>
                     </td>
                     <td
                       className="px-5 py-4 whitespace-nowrap text-xs font-mono"

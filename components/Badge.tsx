@@ -7,13 +7,18 @@ interface BadgeProps {
   className?: string;
 }
 
-export default function Badge({ color, dot, children, className = "" }: BadgeProps) {
+export default function Badge({
+  color,
+  dot,
+  children,
+  className = "",
+}: BadgeProps) {
   return (
     <span
       style={{
-        background:   `var(--badge-${color}-bg)`,
-        color:        `var(--badge-${color}-text)`,
-        borderColor:  `var(--badge-${color}-border)`,
+        background: `var(--badge-${color}-bg)`,
+        color: `var(--badge-${color}-text)`,
+        borderColor: `var(--badge-${color}-border)`,
       }}
       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${className}`}
     >

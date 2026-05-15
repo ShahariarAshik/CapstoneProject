@@ -28,5 +28,6 @@ export function setToken(token: string, expiresIn: number = 86400): void {
 }
 
 export function clearToken(): void {
-  document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  document.cookie =
+    "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 }

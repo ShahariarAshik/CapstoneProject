@@ -10,13 +10,18 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  // Initialize theme from localStorage on client, "dark" on server
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("dribl-theme") as Theme) ?? "dark";
+    }
+    return "dark";
+  });
 
+  // Update document attribute when theme changes
   useEffect(() => {
-    const stored = (localStorage.getItem("dribl-theme") as Theme) ?? "dark";
-    setTheme(stored);
-    document.documentElement.setAttribute("data-theme", stored);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
@@ -25,7 +30,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute("data-theme", next);
   };
 
-  return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>;
+  return (
+    <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>
+  );
 }
 
 export const useTheme = () => useContext(ThemeCtx);

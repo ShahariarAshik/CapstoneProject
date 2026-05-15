@@ -1,41 +1,40 @@
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface LoginRequest {
-  email:    string;
+  email: string;
   password: string;
 }
 
 export interface LoginResponse {
   access_token: string;
-  expires_in:   number; // seconds
+  expires_in: number; // seconds
 }
 
 export interface RegisterRequest {
   full_name: string;
-  username:  string;
-  email:     string;
-  password:  string;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface RegisterResponse {
   access_token?: string;
-  expires_in?:   number;
+  expires_in?: number;
 }
 
 export interface JwtPayload {
-  sub?:       string;
-  email?:     string;
+  sub?: string;
+  email?: string;
   full_name?: string;
-  username?:  string;
-  exp?:       number; // unix timestamp (seconds) — optional per JWT spec
+  username?: string;
+  exp?: number; // unix timestamp (seconds) — optional per JWT spec
 }
-
 
 // ─── API Errors ───────────────────────────────────────────────────────────────
 
 export interface FastApiFieldError {
-  loc:  string[];
-  msg:  string;
+  loc: string[];
+  msg: string;
   type: string;
 }
 
@@ -43,15 +42,15 @@ export interface ApiErrorResponse {
   detail: string | FastApiFieldError[];
 }
 
-
 // ─── Leagues ──────────────────────────────────────────────────────────────────
 
 export interface LeagueItem {
-  id:          string;
+  id: string;
   league_name: string;
-  season:      string;
-  matches:     number;
-  status:      "ongoing" | "completed";
+  competition_name: string;
+  season: string;
+  matches: number;
+  status: "pending" | "completed";
 }
 
 export interface GetLeaguesResponse {
@@ -59,29 +58,29 @@ export interface GetLeaguesResponse {
 }
 
 export interface League {
-  id:       number;
-  name:     string;
+  id: number;
+  name: string;
   leagueId: string;
-  season:   string | number;
-  matches:  number | string;
-  status:   "Ongoing" | "Completed" | "No Data";
+  competition_name: string;
+  season: string | number;
+  matches: number | string;
+  status: "Pending" | "Completed" | "No Data";
 }
-
 
 // ─── Fixtures / Matches ───────────────────────────────────────────────────────
 
 export interface FixtureItem {
-  home_team_id:   string;
+  home_team_id: string;
   home_team_name: string;
-  away_team_id:   string;
+  away_team_id: string;
   away_team_name: string;
-  ground_id:      string;
-  ground_name:    string;
-  utc_datetime:   string; // ISO 8601
-  event_status?:  "ongoing" | "completed" | "cancelled";
-  duration?:      number;
-  home_score?:    number;
-  away_score?:    number;
+  ground_id?: string;
+  ground_name?: string;
+  utc_datetime?: string; // ISO 8601
+  event_status?: "pending" | "complete"; // | "completed" | "cancelled";
+  duration?: number;
+  home_score?: number;
+  away_score?: number;
 }
 
 export interface GetFixturesResponse {
@@ -89,28 +88,27 @@ export interface GetFixturesResponse {
 }
 
 export interface Match {
-  id:        number;
-  homeTeam:  string;
-  awayTeam:  string;
-  location:  string;
-  date:      string;
-  time:      string;
-  status:    "Ongoing" | "Completed" | "Cancelled" | "No Data";
+  id: number;
+  homeTeam: string;
+  awayTeam: string;
+  location: string;
+  date: string;
+  time: string;
+  status: "Pending" | "Completed" | "No Data";
   homeScore: number | null;
   awayScore: number | null;
 }
 
-
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
 
 export interface JobItem {
-  id:          string | number;
-  name:        string;
+  id: string | number;
+  name: string;
   report_type: string;
-  tone:        "serious" | "comedy";
-  start_time:  string; // ISO 8601
-  status:      "ongoing" | "completed";
-  progress:    number; // 0–100
+  tone: "serious" | "comedy";
+  start_time: string; // ISO 8601
+  status: "pending" | "completed";
+  progress: number; // 0-100
 }
 
 export interface GetJobsResponse {
@@ -118,25 +116,24 @@ export interface GetJobsResponse {
 }
 
 export interface Job {
-  id:         number;
-  name:       string;
+  id: number;
+  name: string;
   reportType: string;
-  tone:       "Serious" | "Comedy";
-  startTime:  string;
-  status:     "Ongoing" | "Completed";
-  progress:   number;
+  tone: "Serious" | "Comedy";
+  startTime: string;
+  status: "Pending" | "Completed";
+  progress: number;
 }
-
 
 // ─── Reports ──────────────────────────────────────────────────────────────────
 
 export interface ReportItem {
-  id:         string | number;
-  name:       string;
-  type:       "Post Match Report" | "Pre Match Report" | "League Summary Report";
+  id: string | number;
+  name: string;
+  type: "Post Match Report" | "Pre Match Report" | "League Summary Report";
   created_at: string; // ISO 8601
-  tone:       "serious" | "comedy";
-  content?:   string;
+  tone: "serious" | "comedy";
+  content?: string;
 }
 
 export interface GetReportsResponse {
@@ -144,13 +141,12 @@ export interface GetReportsResponse {
 }
 
 export interface Report {
-  id:        number;
-  name:      string;
-  type:      ReportItem["type"];
+  id: number;
+  name: string;
+  type: ReportItem["type"];
   createdAt: string;
-  tone:      "Serious" | "Comedy";
+  tone: "Serious" | "Comedy";
 }
-
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -158,13 +154,18 @@ export interface DashboardStatsResponse {
   total_reports: number;
   total_matches: number;
   total_leagues: number;
-  total_jobs:    number;
+  total_jobs: number;
 }
-
 
 // ─── UI ───────────────────────────────────────────────────────────────────────
 
 export type BadgeColor =
-  | "emerald" | "amber" | "red"
-  | "indigo"  | "violet" | "blue"
-  | "cyan"    | "purple" | "gray";
+  | "emerald"
+  | "amber"
+  | "red"
+  | "indigo"
+  | "violet"
+  | "blue"
+  | "cyan"
+  | "purple"
+  | "gray";

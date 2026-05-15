@@ -1,7 +1,10 @@
 import { getToken } from "@/lib/auth";
 import type { FastApiFieldError } from "@/lib/types";
 
-export function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export function apiFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
   const token = getToken();
   return fetch(url, {
     ...options,

@@ -7,30 +7,48 @@
 
 :root {
   /* Structural */
-  --bg-page:     #f8fafc;
-  --bg-surface:  #ffffff;
-  --bg-input:    #f1f5f9;
-  --bg-hover:    #f1f5f9;
-  --bg-card:     #ffffff;
-  --bg-thead:    #f8fafc;
-  --border:      #e2e8f0;
-  --divider:     #f1f5f9;
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-input: #f1f5f9;
+  --bg-hover: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-thead: #f8fafc;
+  --border: #e2e8f0;
+  --divider: #f1f5f9;
 
   /* Text */
-  --text-1:      #0f172a;
-  --text-2:      #64748b;
-  --text-3:      #94a3b8;
+  --text-1: #0f172a;
+  --text-2: #64748b;
+  --text-3: #94a3b8;
 
   /* Badges */
-  --badge-emerald-bg: #f0fdf4; --badge-emerald-text: #166534; --badge-emerald-border: #bbf7d0;
-  --badge-amber-bg:   #fffbeb; --badge-amber-text:   #92400e; --badge-amber-border:   #fde68a;
-  --badge-red-bg:     #fef2f2; --badge-red-text:     #991b1b; --badge-red-border:     #fecaca;
-  --badge-indigo-bg:  #eef2ff; --badge-indigo-text:  #3730a3; --badge-indigo-border:  #c7d2fe;
-  --badge-violet-bg:  #f5f3ff; --badge-violet-text:  #5b21b6; --badge-violet-border:  #ddd6fe;
-  --badge-blue-bg:    #eff6ff; --badge-blue-text:    #1e40af; --badge-blue-border:    #bfdbfe;
-  --badge-cyan-bg:    #ecfeff; --badge-cyan-text:    #155e75; --badge-cyan-border:    #a5f3fc;
-  --badge-purple-bg:  #faf5ff; --badge-purple-text:  #6b21a8; --badge-purple-border:  #e9d5ff;
-  --badge-gray-bg:    #f1f5f9; --badge-gray-text:    #475569; --badge-gray-border:    #e2e8f0;
+  --badge-emerald-bg: #f0fdf4;
+  --badge-emerald-text: #166534;
+  --badge-emerald-border: #bbf7d0;
+  --badge-amber-bg: #fffbeb;
+  --badge-amber-text: #92400e;
+  --badge-amber-border: #fde68a;
+  --badge-red-bg: #fef2f2;
+  --badge-red-text: #991b1b;
+  --badge-red-border: #fecaca;
+  --badge-indigo-bg: #eef2ff;
+  --badge-indigo-text: #3730a3;
+  --badge-indigo-border: #c7d2fe;
+  --badge-violet-bg: #f5f3ff;
+  --badge-violet-text: #5b21b6;
+  --badge-violet-border: #ddd6fe;
+  --badge-blue-bg: #eff6ff;
+  --badge-blue-text: #1e40af;
+  --badge-blue-border: #bfdbfe;
+  --badge-cyan-bg: #ecfeff;
+  --badge-cyan-text: #155e75;
+  --badge-cyan-border: #a5f3fc;
+  --badge-purple-bg: #faf5ff;
+  --badge-purple-text: #6b21a8;
+  --badge-purple-border: #e9d5ff;
+  --badge-gray-bg: #f1f5f9;
+  --badge-gray-text: #475569;
+  --badge-gray-border: #e2e8f0;
 
   /* Button hover backgrounds */
   --btn-indigo-hover: #e0e7ff;
@@ -38,46 +56,73 @@
 }
 
 [data-theme="dark"] {
-  --bg-page:     #08080f;
-  --bg-surface:  #0c0c15;
-  --bg-input:    rgba(255,255,255,0.05);
-  --bg-hover:    rgba(255,255,255,0.03);
-  --bg-card:     rgba(255,255,255,0.03);
-  --bg-thead:    rgba(255,255,255,0.04);
-  --border:      rgba(255,255,255,0.07);
-  --divider:     rgba(255,255,255,0.04);
+  --bg-page: #08080f;
+  --bg-surface: #0c0c15;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --bg-hover: rgba(255, 255, 255, 0.03);
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-thead: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.07);
+  --divider: rgba(255, 255, 255, 0.04);
 
-  --text-1:      #ffffff;
-  --text-2:      #94a3b8;
-  --text-3:      #475569;
+  --text-1: #ffffff;
+  --text-2: #94a3b8;
+  --text-3: #475569;
 
-  --badge-emerald-bg: rgba(16,185,129,.10);  --badge-emerald-text: #34d399; --badge-emerald-border: rgba(16,185,129,.20);
-  --badge-amber-bg:   rgba(245,158,11,.10);  --badge-amber-text:   #fbbf24; --badge-amber-border:   rgba(245,158,11,.20);
-  --badge-red-bg:     rgba(239,68,68,.10);   --badge-red-text:     #f87171; --badge-red-border:     rgba(239,68,68,.20);
-  --badge-indigo-bg:  rgba(99,102,241,.10);  --badge-indigo-text:  #818cf8; --badge-indigo-border:  rgba(99,102,241,.20);
-  --badge-violet-bg:  rgba(139,92,246,.10);  --badge-violet-text:  #a78bfa; --badge-violet-border:  rgba(139,92,246,.20);
-  --badge-blue-bg:    rgba(59,130,246,.10);  --badge-blue-text:    #60a5fa; --badge-blue-border:    rgba(59,130,246,.20);
-  --badge-cyan-bg:    rgba(6,182,212,.10);   --badge-cyan-text:    #22d3ee; --badge-cyan-border:    rgba(6,182,212,.20);
-  --badge-purple-bg:  rgba(168,85,247,.10);  --badge-purple-text:  #c084fc; --badge-purple-border:  rgba(168,85,247,.20);
-  --badge-gray-bg:    rgba(255,255,255,.04); --badge-gray-text:    #94a3b8; --badge-gray-border:    rgba(255,255,255,.08);
+  --badge-emerald-bg: rgba(16, 185, 129, 0.1);
+  --badge-emerald-text: #34d399;
+  --badge-emerald-border: rgba(16, 185, 129, 0.2);
+  --badge-amber-bg: rgba(245, 158, 11, 0.1);
+  --badge-amber-text: #fbbf24;
+  --badge-amber-border: rgba(245, 158, 11, 0.2);
+  --badge-red-bg: rgba(239, 68, 68, 0.1);
+  --badge-red-text: #f87171;
+  --badge-red-border: rgba(239, 68, 68, 0.2);
+  --badge-indigo-bg: rgba(99, 102, 241, 0.1);
+  --badge-indigo-text: #818cf8;
+  --badge-indigo-border: rgba(99, 102, 241, 0.2);
+  --badge-violet-bg: rgba(139, 92, 246, 0.1);
+  --badge-violet-text: #a78bfa;
+  --badge-violet-border: rgba(139, 92, 246, 0.2);
+  --badge-blue-bg: rgba(59, 130, 246, 0.1);
+  --badge-blue-text: #60a5fa;
+  --badge-blue-border: rgba(59, 130, 246, 0.2);
+  --badge-cyan-bg: rgba(6, 182, 212, 0.1);
+  --badge-cyan-text: #22d3ee;
+  --badge-cyan-border: rgba(6, 182, 212, 0.2);
+  --badge-purple-bg: rgba(168, 85, 247, 0.1);
+  --badge-purple-text: #c084fc;
+  --badge-purple-border: rgba(168, 85, 247, 0.2);
+  --badge-gray-bg: rgba(255, 255, 255, 0.04);
+  --badge-gray-text: #94a3b8;
+  --badge-gray-border: rgba(255, 255, 255, 0.08);
 
   /* Button hover backgrounds */
-  --btn-indigo-hover: rgba(99,102,241,.25);
-  --btn-violet-hover: rgba(139,92,246,.25);
+  --btn-indigo-hover: rgba(99, 102, 241, 0.25);
+  --btn-violet-hover: rgba(139, 92, 246, 0.25);
 }
 
 /* Ambient blobs — dark mode only */
-.ambient-blobs { display: none; }
-[data-theme="dark"] .ambient-blobs { display: block; }
+.ambient-blobs {
+  display: none;
+}
+[data-theme="dark"] .ambient-blobs {
+  display: block;
+}
 
 /* Reusable action button variants — used in Reports and elsewhere */
 .btn-ghost {
   background: var(--bg-input);
   border-color: var(--border);
   color: var(--text-2);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
-.btn-ghost:hover { background: var(--bg-hover); color: var(--text-1); }
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
 
 .btn-indigo {
   background: var(--badge-indigo-bg);
@@ -85,7 +130,9 @@
   color: var(--badge-indigo-text);
   transition: background 0.15s;
 }
-.btn-indigo:hover { background: var(--btn-indigo-hover); }
+.btn-indigo:hover {
+  background: var(--btn-indigo-hover);
+}
 
 .btn-violet {
   background: var(--badge-violet-bg);
@@ -93,20 +140,37 @@
   color: var(--badge-violet-text);
   transition: background 0.15s;
 }
-.btn-violet:hover { background: var(--btn-violet-hover); }
+.btn-violet:hover {
+  background: var(--btn-violet-hover);
+}
 
 body {
   background-color: var(--bg-page);
   color: var(--text-1);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-6px); }
-  40%       { transform: translateX(6px); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
 }
-.shake { animation: shake 0.4s ease; }
+.shake {
+  animation: shake 0.4s ease;
+}

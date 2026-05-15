@@ -1,11 +1,11 @@
 export interface ValidationReport {
-  endpoint:       string;
-  totalItems:     number;
+  endpoint: string;
+  totalItems: number;
   requiredFields: string[];
   missingByField: Record<string, number>; // field → how many items are missing it
-  sampleItem:     Record<string, unknown>; // first invalid item's raw payload
-  valid:          boolean;
-  empty:          boolean; // array exists but has 0 items — structure unverifiable
+  sampleItem: Record<string, unknown>; // first invalid item's raw payload
+  valid: boolean;
+  empty: boolean; // array exists but has 0 items — structure unverifiable
 }
 
 export function validateItems(
