@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal";
 import { apiFetch } from "@/lib/api";
+import { API_URL } from "@/lib/config";
+import type { FixtureDetailsResponse } from "@/lib/matchdetail_types";
+import { isFixtureDetailsResponse } from "@/lib/matchdetail_types";
 
 interface MatchDetailsModalProps {
   fixtureId: string | number;
@@ -13,13 +16,14 @@ export default function MatchDetailsModal({
   fixtureId,
   onClose,
 }: MatchDetailsModalProps) {
-  const [modalHasContent, setModalHasContent] = useState<unknown | null>(null);
+  const [modalHasContent, setModalHasContent] =
+    useState<FixtureDetailsResponse | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    apiFetch(`http://localhost:8000/api/fixture-details/${fixtureId}`, {
+    apiFetch(`${API_URL}/api/fixture-details/${fixtureId}`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -33,7 +37,12 @@ export default function MatchDetailsModal({
 
         return response.json();
       })
-      .then((data) => {
+      .then((data: unknown) => {
+        if (!isFixtureDetailsResponse(data)) {
+          throw new Error(
+            "API response does not match expected fixture details structure",
+          );
+        }
         setModalHasContent(data);
       })
       .catch((error) => {
