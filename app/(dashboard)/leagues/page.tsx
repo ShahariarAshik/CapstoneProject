@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Info } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
-import Modal from "@/components/Modal";
 import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
@@ -35,7 +33,6 @@ export default function LeaguesPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [column, setColumn] = useState(COLS[0]);
-  const [selected, setSelected] = useState<League | null>(null);
   const [validationError, setValidationError] =
     useState<ValidationReport | null>(null);
 
@@ -245,12 +242,6 @@ export default function LeaguesPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setSelected(league)}
-                          className="btn-ghost flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border"
-                        >
-                          <Info size={12} /> Details
-                        </button>
                         <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition whitespace-nowrap">
                           Generate Report
                         </button>
@@ -277,37 +268,6 @@ export default function LeaguesPage() {
           report={validationError}
           onClose={() => setValidationError(null)}
         />
-      )}
-
-      {selected && (
-        <Modal title="League Details" onClose={() => setSelected(null)}>
-          {(
-            [
-              ["League Name", selected.name],
-              ["League ID", selected.leagueId],
-              ["Competition", selected.competition_name],
-              ["Season", String(selected.season)],
-              ["Matches", String(selected.matches)],
-              ["Status", selected.status],
-            ] as [string, string][]
-          ).map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-start py-2.5 border-b last:border-0"
-              style={{ borderColor: "var(--divider)" }}
-            >
-              <span
-                className="w-28 shrink-0 text-xs font-medium"
-                style={{ color: "var(--text-3)" }}
-              >
-                {label}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-1)" }}>
-                {value}
-              </span>
-            </div>
-          ))}
-        </Modal>
       )}
     </div>
   );

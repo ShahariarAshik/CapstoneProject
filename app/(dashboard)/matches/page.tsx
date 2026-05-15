@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
-import Modal from "@/components/Modal";
+import MatchDetailsModal from "@/components/MatchDetailsModal";
 import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
@@ -17,6 +17,8 @@ import type {
   GetFixturesResponse,
   BadgeColor,
 } from "@/lib/types";
+
+type DetailedMatch = Match & { fixtureId: string | number };
 
 const REQUIRED_FIELDS: (keyof FixtureItem)[] = [
   "home_team_id",
@@ -31,12 +33,13 @@ const COLS = ["Home Team", "Away Team", "Location", "Status"];
 const PER_PAGE = 10;
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [matches, setMatches] = useState<DetailedMatch[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [column, setColumn] = useState(COLS[0]);
-  const [selected, setSelected] = useState<Match | null>(null);
+  const [selectedFixtureId, setSelectedFixtureId] =
+    useState<string | number | null>(null);
   const [validationError, setValidationError] =
     useState<ValidationReport | null>(null);
 
@@ -61,8 +64,10 @@ export default function MatchesPage() {
           .map((item: FixtureItem, i: number) => {
             const d = new Date(item.utc_datetime ?? "");
             if (isNaN(d.getTime())) return null;
+            const record = item as unknown as Record<string, unknown>;
             return {
               id: i + 1,
+              fixtureId: record.fixture_id ?? record.id ?? i + 1,
               homeTeam: item.home_team_name,
               awayTeam: item.away_team_name,
               location: item.ground_name,
@@ -80,9 +85,9 @@ export default function MatchesPage() {
                       "No Data",
               homeScore: item.home_score ?? null,
               awayScore: item.away_score ?? null,
-            } as Match;
+            } as DetailedMatch;
           })
-          .filter((m): m is Match => m !== null);
+          .filter((m): m is DetailedMatch => m !== null);
         setMatches(mapped);
       })
       .catch(console.error)
@@ -284,7 +289,7 @@ export default function MatchesPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setSelected(match)}
+                          onClick={() => setSelectedFixtureId(match.fixtureId)}
                           className="btn-ghost flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border"
                         >
                           <Info size={12} /> Details
@@ -317,39 +322,12 @@ export default function MatchesPage() {
         />
       )}
 
-      {selected && (
-        <Modal title="Match Details" onClose={() => setSelected(null)}>
-          {(
-            [
-              ["Home Team", selected.homeTeam],
-              ["Away Team", selected.awayTeam],
-              ["Location", selected.location],
-              ["Date", selected.date],
-              ["Time", selected.time],
-              [
-                "Score",
-                `${selected.homeScore ?? "-"} : ${selected.awayScore ?? "-"}`,
-              ],
-              ["Status", selected.status],
-            ] as [string, string][]
-          ).map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-start py-2.5 border-b last:border-0"
-              style={{ borderColor: "var(--divider)" }}
-            >
-              <span
-                className="w-28 shrink-0 text-xs font-medium"
-                style={{ color: "var(--text-3)" }}
-              >
-                {label}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-1)" }}>
-                {value}
-              </span>
-            </div>
-          ))}
-        </Modal>
+      {selectedFixtureId !== null && (
+        <MatchDetailsModal
+          key={selectedFixtureId}
+          fixtureId={selectedFixtureId}
+          onClose={() => setSelectedFixtureId(null)}
+        />
       )}
     </div>
   );
