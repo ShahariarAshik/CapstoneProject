@@ -33,6 +33,10 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('dribl-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
           }}
         />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+        />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>

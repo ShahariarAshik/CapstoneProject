@@ -35,6 +35,10 @@ export default function Modal({
       ? "items-end justify-end"
       : "items-center justify-center";
 
+  const wrapperClasses = className
+    ? `w-full rounded-2xl border shadow-2xl flex flex-col overflow-hidden ${className}`
+    : "w-full max-w-md rounded-2xl border shadow-2xl flex flex-col overflow-hidden";
+
   return (
     <div
       className={`fixed inset-0 z-50 flex ${positionClasses} p-4`}
@@ -44,9 +48,7 @@ export default function Modal({
       }}
     >
       <div
-        className={`w-full max-w-md rounded-2xl border shadow-2xl flex flex-col overflow-hidden ${
-          className ?? ""
-        }`}
+        className={wrapperClasses}
         style={{
           background: "var(--bg-surface)",
           borderColor: "var(--border)",
