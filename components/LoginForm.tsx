@@ -34,6 +34,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const hasError = errors.length > 0;
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,6 +58,11 @@ export default function LoginForm() {
       }
 
       const data = (await res.json()) as LoginResponse;
+      if (!data.access_token) {
+        setErrors(["Invalid credentials. Please try again."]);
+        setLoading(false);
+        return;
+      }
       setToken(data.access_token, data.expires_in);
       window.location.href = "/";
       // keep loading=true — page is navigating away, no flash
@@ -169,10 +175,8 @@ export default function LoginForm() {
                   placeholder="you@example.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl
-                             placeholder:text-gray-400 text-gray-900
-                             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  onChange={(e) => { setEmail(e.target.value); setErrors([]); }}
+                  className={`w-full px-4 py-2.5 text-sm bg-gray-50 rounded-xl placeholder:text-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition ${hasError ? "border-2 border-red-400 focus:ring-red-400" : "border border-gray-200 focus:ring-indigo-500"}`}
                 />
               </div>
 
@@ -186,10 +190,8 @@ export default function LoginForm() {
                     placeholder="••••••••"
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 pr-11 text-sm bg-gray-50 border border-gray-200 rounded-xl
-                               placeholder:text-gray-400 text-gray-900
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                    onChange={(e) => { setPassword(e.target.value); setErrors([]); }}
+                    className={`w-full px-4 py-2.5 pr-11 text-sm bg-gray-50 rounded-xl placeholder:text-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition ${hasError ? "border-2 border-red-400 focus:ring-red-400" : "border border-gray-200 focus:ring-indigo-500"}`}
                   />
                   <button
                     type="button"

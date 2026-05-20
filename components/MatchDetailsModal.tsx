@@ -71,116 +71,76 @@ function periodOrder(p: string | null | undefined): number {
   return o[p ?? ""] ?? 99;
 }
 
-type EventStyle = { icon: string; bg: string; color: string };
+// Returns Tabler icon class + Tailwind color classes
+type EventStyle = { iconClass: string; colorClass: string };
 function eventStyle(type: string | null | undefined): EventStyle {
   const t = (type ?? "").toLowerCase();
   if (t.includes("goal"))
-    return {
-      icon: "⚽",
-      bg: "var(--color-background-success)",
-      color: "var(--color-text-success)",
-    };
+    return { iconClass: "ti ti-ball-football", colorClass: "bg-emerald-subtle text-emerald-on" };
   if (t.includes("yellow"))
-    return { icon: "🟨", bg: "#FAEEDA", color: "#854F0B" };
+    return { iconClass: "ti ti-square-rounded-filled", colorClass: "bg-amber-subtle text-amber-on" };
   if (t.includes("red"))
-    return {
-      icon: "🟥",
-      bg: "var(--color-background-danger)",
-      color: "var(--color-text-danger)",
-    };
+    return { iconClass: "ti ti-square-rounded-filled", colorClass: "bg-red-subtle text-red-on" };
   if (t.includes("substitute"))
-    return {
-      icon: "🔄",
-      bg: "var(--color-background-info)",
-      color: "var(--color-text-info)",
-    };
-  return {
-    icon: "•",
-    bg: "var(--color-background-secondary)",
-    color: "var(--color-text-secondary)",
-  };
+    return { iconClass: "ti ti-arrows-exchange", colorClass: "bg-blue-subtle text-blue-on" };
+  return { iconClass: "ti ti-circle-dot", colorClass: "bg-input text-t2" };
 }
 
-type BadgeStyle = { label: string; bg: string; color: string };
+// Returns label + Tailwind color classes for a status pill
+type BadgeStyle = { label: string; colorClass: string };
 function statusStyle(s: string | null | undefined): BadgeStyle {
   const v = (s ?? "").toLowerCase();
   if (v === "complete" || v === "completed")
-    return {
-      label: "Complete",
-      bg: "var(--color-background-success)",
-      color: "var(--color-text-success)",
-    };
+    return { label: "Complete", colorClass: "bg-emerald-subtle text-emerald-on" };
   if (v === "in_progress" || v === "live")
-    return {
-      label: "Live",
-      bg: "var(--color-background-danger)",
-      color: "var(--color-text-danger)",
-    };
+    return { label: "Live", colorClass: "bg-red-subtle text-red-on" };
   if (v === "scheduled" || v === "upcoming")
-    return {
-      label: "Upcoming",
-      bg: "var(--color-background-info)",
-      color: "var(--color-text-info)",
-    };
-  return {
-    label: s ?? "—",
-    bg: "var(--color-background-secondary)",
-    color: "var(--color-text-secondary)",
-  };
+    return { label: "Upcoming", colorClass: "bg-blue-subtle text-blue-on" };
+  if (v === "pending")
+    return { label: "Pending", colorClass: "bg-amber-subtle text-amber-on" };
+  return { label: s ?? "—", colorClass: "bg-input text-t2" };
 }
 
-// ─── Shared style tokens ──────────────────────────────────────────────────────
-
-const card: React.CSSProperties = {
-  background: "var(--color-background-primary)",
-  border: "0.5px solid var(--color-border-tertiary)",
-  borderRadius: 12,
-  padding: "10px 12px",
-};
-
-const pill = (bg: string, color: string): React.CSSProperties => ({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 4,
-  fontSize: 11,
-  padding: "3px 10px",
-  borderRadius: 999,
-  background: bg,
-  color,
-});
-
-const metaItem: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-  fontSize: 12,
-  color: "var(--color-text-secondary)",
-};
-
-const sectionLabel: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 500,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  color: "var(--color-text-tertiary)",
-  margin: "14px 0 6px",
-};
-
-const avatar = (bg: string, color: string, size = 44): React.CSSProperties => ({
-  width: size,
-  height: size,
-  borderRadius: "50%",
-  flexShrink: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: size > 32 ? 14 : 11,
-  fontWeight: 500,
-  background: bg,
-  color,
-});
-
 // ─── Hero ─────────────────────────────────────────────────────────────────────
+
+function TeamBlock({
+  name,
+  club,
+  isWinner,
+  side,
+}: {
+  name: string | null | undefined;
+  club: string | null | undefined;
+  isWinner: boolean;
+  side: "home" | "away";
+}) {
+  const avatarClass =
+    side === "home"
+      ? "bg-blue-subtle text-blue-on"
+      : "bg-amber-subtle text-amber-on";
+
+  return (
+    <div className="flex flex-col items-center gap-2 flex-1">
+      <div
+        className={`size-14 rounded-full border-2 border-line flex items-center justify-center text-base font-bold shrink-0 ${avatarClass}`}
+      >
+        {name ? initials(club ?? name) : "?"}
+      </div>
+      <div className="text-center">
+        <div className="text-[13px] font-semibold text-t1 leading-[1.3]">
+          {name ?? "TBD"}
+        </div>
+        {club && <div className="text-[11px] text-t2 mt-0.5">{club}</div>}
+      </div>
+      {isWinner && (
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-[3px] rounded-full bg-amber-subtle text-amber-on border border-amber-edge">
+          <i className="ti ti-trophy text-[11px]" />
+          Winner
+        </span>
+      )}
+    </div>
+  );
+}
 
 function HeroSection({ data }: { data: FixtureDetailsResponse }) {
   const badge = statusStyle(data.event_status);
@@ -191,26 +151,19 @@ function HeroSection({ data }: { data: FixtureDetailsResponse }) {
   const isAwayWinner = result?.winner_team_id === away?.id;
 
   return (
-    <div
-      style={{
-        background: "var(--color-background-secondary)",
-        borderRadius: 12,
-        padding: "16px 20px",
-        marginBottom: 16,
-      }}
-    >
+    <div className="bg-thead border border-line rounded-2xl py-5 px-6 mb-4">
       {/* Context row */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 14,
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          <span style={pill(badge.bg, badge.color)}>{badge.label}</span>
-          <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex flex-col gap-1.5">
+          <span
+            className={`self-start inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-[3px] rounded-full ${badge.colorClass}`}
+          >
+            {badge.label === "Live" && (
+              <span className="size-1.5 rounded-full bg-current inline-block" />
+            )}
+            {badge.label}
+          </span>
+          <span className="text-xs text-t2">
             {[
               data.league?.league_name,
               data.league?.competition?.competition_name,
@@ -221,188 +174,66 @@ function HeroSection({ data }: { data: FixtureDetailsResponse }) {
           </span>
         </div>
         {data.duration && (
-          <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-            ⏱ {data.duration} min
+          <span className="flex items-center gap-1.5 text-xs text-t2 bg-input px-2.5 py-1 rounded-lg border border-line">
+            <i className="ti ti-clock text-[13px]" />
+            {data.duration} min
           </span>
         )}
       </div>
 
       {/* Score row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-        }}
-      >
-        {/* Home team */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 5,
-            flex: 1,
-          }}
-        >
-          <div style={avatar("#E6F1FB", "#185FA5")}>
-            {home ? initials(home.club_name ?? home.team_name ?? "H") : "H"}
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              textAlign: "center",
-              color: "var(--color-text-primary)",
-              lineHeight: 1.3,
-            }}
-          >
-            {home?.team_name ?? "Home Team"}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "var(--color-text-secondary)",
-              textAlign: "center",
-            }}
-          >
-            {home?.club_name}
-          </div>
-          {isHomeWinner && (
-            <span
-              style={pill(
-                "var(--color-background-success)",
-                "var(--color-text-success)",
-              )}
-            >
-              🏆 Winner
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <TeamBlock
+          name={home?.team_name}
+          club={home?.club_name}
+          isWinner={isHomeWinner}
+          side="home"
+        />
 
         {/* Score */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            minWidth: 110,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "baseline" }}>
-            <span
-              style={{
-                fontSize: 40,
-                fontWeight: 500,
-                letterSpacing: -1,
-                color: "var(--color-text-primary)",
-              }}
-            >
+        <div className="flex flex-col items-center gap-1 min-w-[120px] px-4 py-3.5 bg-card rounded-[14px] border border-line shrink-0">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-5xl font-bold tracking-[-2px] text-t1 leading-none tabular-nums">
               {result?.home_score ?? "–"}
             </span>
-            <span
-              style={{
-                fontSize: 26,
-                color: "var(--color-text-tertiary)",
-                margin: "0 5px",
-              }}
-            >
-              –
-            </span>
-            <span
-              style={{
-                fontSize: 40,
-                fontWeight: 500,
-                letterSpacing: -1,
-                color: "var(--color-text-primary)",
-              }}
-            >
+            <span className="text-2xl text-t3 leading-none">:</span>
+            <span className="text-5xl font-bold tracking-[-2px] text-t1 leading-none tabular-nums">
               {result?.away_score ?? "–"}
             </span>
           </div>
-          <div
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.08em",
-              color: "var(--color-text-tertiary)",
-            }}
-          >
-            FT
+          <div className="text-[10px] tracking-[0.1em] font-semibold text-t3 uppercase">
+            Full Time
           </div>
         </div>
 
-        {/* Away team */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 5,
-            flex: 1,
-          }}
-        >
-          <div style={avatar("#FAEEDA", "#854F0B")}>
-            {away ? initials(away.club_name ?? away.team_name ?? "A") : "A"}
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              textAlign: "center",
-              color: "var(--color-text-primary)",
-              lineHeight: 1.3,
-            }}
-          >
-            {away?.team_name ?? "Away Team"}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "var(--color-text-secondary)",
-              textAlign: "center",
-            }}
-          >
-            {away?.club_name}
-          </div>
-          {isAwayWinner && (
-            <span
-              style={pill(
-                "var(--color-background-success)",
-                "var(--color-text-success)",
-              )}
-            >
-              🏆 Winner
-            </span>
-          )}
-        </div>
+        <TeamBlock
+          name={away?.team_name}
+          club={away?.club_name}
+          isWinner={isAwayWinner}
+          side="away"
+        />
       </div>
 
       {/* Meta bar */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "4px 16px",
-          marginTop: 14,
-          paddingTop: 14,
-          borderTop: "0.5px solid var(--color-border-tertiary)",
-        }}
-      >
-        <span style={metaItem}>
-          📅 {formatLocalDate(data.local_start_date)}
+      <div className="flex flex-wrap gap-y-1.5 gap-x-5 mt-[18px] pt-4 border-t border-line">
+        <span className="flex items-center gap-1.5 text-xs text-t2">
+          <i className="ti ti-calendar text-sm shrink-0" />
+          {formatLocalDate(data.local_start_date)}
           {data.local_start_time
             ? ` · ${formatLocalTime(data.local_start_time)}`
             : ""}
         </span>
         {data.ground && (
-          <span style={metaItem}>
-            📍 {data.ground.field?.field_name ?? data.ground.ground_name}
+          <span className="flex items-center gap-1.5 text-xs text-t2">
+            <i className="ti ti-map-pin text-sm shrink-0" />
+            {data.ground.field?.field_name ?? data.ground.ground_name}
           </span>
         )}
         {data.ground?.address && (
-          <span style={metaItem}>🗺 {data.ground.address}</span>
+          <span className="flex items-center gap-1.5 text-xs text-t2">
+            <i className="ti ti-map-2 text-sm shrink-0" />
+            {data.ground.address}
+          </span>
         )}
       </div>
     </div>
@@ -411,10 +242,10 @@ function HeroSection({ data }: { data: FixtureDetailsResponse }) {
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "events", label: "Timeline" },
-  { id: "roster", label: "Rosters" },
-  { id: "venue", label: "Venue" },
+const TABS: { id: Tab; label: string; icon: string }[] = [
+  { id: "events", label: "Timeline", icon: "ti-timeline" },
+  { id: "roster", label: "Rosters", icon: "ti-users" },
+  { id: "venue", label: "Venue", icon: "ti-building-stadium" },
 ];
 
 function Tabs({
@@ -425,32 +256,18 @@ function Tabs({
   onChange: (t: Tab) => void;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        borderBottom: "0.5px solid var(--color-border-tertiary)",
-        marginBottom: 14,
-      }}
-    >
+    <div className="flex gap-1 bg-input rounded-[10px] p-1 mb-4 border border-line">
       {TABS.map((t) => (
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
-          style={{
-            padding: "8px 16px",
-            fontSize: 13,
-            border: "none",
-            cursor: "pointer",
-            background: "none",
-            marginBottom: -1,
-            borderBottom: `2px solid ${active === t.id ? "var(--color-text-primary)" : "transparent"}`,
-            color:
-              active === t.id
-                ? "var(--color-text-primary)"
-                : "var(--color-text-secondary)",
-            fontWeight: active === t.id ? 500 : 400,
-          }}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-[7px] text-xs font-medium rounded-[7px] border-none cursor-pointer transition-all ${
+            active === t.id
+              ? "bg-surface text-t1 shadow-sm"
+              : "text-t2 hover:bg-hover bg-transparent"
+          }`}
         >
+          <i className={`ti ${t.icon} text-sm`} />
           {t.label}
         </button>
       ))}
@@ -460,6 +277,81 @@ function Tabs({
 
 // ─── Events tab ───────────────────────────────────────────────────────────────
 
+function EventRow({
+  ev,
+  homeTeamId,
+}: {
+  ev: MatchEvent;
+  homeTeamId: string | null | undefined;
+}) {
+  const es = eventStyle(ev.event_type);
+  const isHome = ev.team_id === homeTeamId;
+  return (
+    <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors hover:bg-hover">
+      <span className="min-w-8 text-right text-[11px] font-semibold text-t3 tabular-nums shrink-0">
+        {ev.event_time != null ? `${ev.event_time}'` : "—"}
+      </span>
+      <span
+        className={`size-[30px] rounded-full shrink-0 flex items-center justify-center text-[15px] ${es.colorClass}`}
+      >
+        <i className={es.iconClass} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-medium text-t1 truncate">
+          {ev.player_display_name ?? "Unknown player"}
+        </div>
+        {ev.description && ev.description !== ev.event_type && (
+          <div className="text-[11px] text-t2">{ev.description}</div>
+        )}
+      </div>
+      <span
+        className={`text-[10px] font-medium shrink-0 px-2 py-0.5 rounded ${
+          isHome
+            ? "bg-blue-subtle text-blue-on"
+            : "bg-amber-subtle text-amber-on"
+        }`}
+      >
+        {isHome ? "Home" : "Away"}
+      </span>
+    </div>
+  );
+}
+
+function PeriodColumn({
+  label,
+  events,
+  homeTeamId,
+}: {
+  label: string;
+  events: MatchEvent[];
+  homeTeamId: string | null | undefined;
+}) {
+  return (
+    <div className="flex-1 min-w-0">
+      {/* Period header */}
+      <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-input rounded-[10px] border border-line">
+        <i className="ti ti-circle-half-2 text-sm text-t3" />
+        <span className="text-xs font-semibold text-t1">{label}</span>
+        <span className="ml-auto text-[11px] text-t3">
+          {events.length} event{events.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+      {/* Events list */}
+      <div className="bg-card border border-line rounded-[10px] p-1">
+        {events.length ? (
+          events.map((ev) => (
+            <EventRow key={ev.id} ev={ev} homeTeamId={homeTeamId} />
+          ))
+        ) : (
+          <div className="py-4 px-2 text-center text-xs text-t3">
+            No events.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EventsPanel({ data }: { data: FixtureDetailsResponse }) {
   const sorted = [...data.events].sort(
     (a, b) =>
@@ -467,159 +359,53 @@ function EventsPanel({ data }: { data: FixtureDetailsResponse }) {
       (a.event_time ?? 0) - (b.event_time ?? 0),
   );
 
-  const grouped: { label: string; events: MatchEvent[] }[] = [];
+  const grouped: { label: string; order: number; events: MatchEvent[] }[] = [];
   for (const ev of sorted) {
     const label = periodLabel(ev.period);
+    const order = periodOrder(ev.period);
     const last = grouped[grouped.length - 1];
-    if (!last || last.label !== label) grouped.push({ label, events: [ev] });
+    if (!last || last.label !== label)
+      grouped.push({ label, order, events: [ev] });
     else last.events.push(ev);
   }
 
   if (!sorted.length) {
     return (
-      <div
-        style={{
-          padding: "32px 0",
-          textAlign: "center",
-          fontSize: 13,
-          color: "var(--color-text-tertiary)",
-        }}
-      >
-        No match events recorded.
+      <div className="py-12 text-center flex flex-col items-center gap-2.5 text-t3">
+        <i className="ti ti-timeline-event-exclamation text-[36px]" />
+        <span className="text-[13px]">No match events recorded.</span>
       </div>
     );
   }
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "24px",
-        flexWrap: "wrap", // Falls back to stacked if container width is too narrow
-      }}
-    >
-      {grouped.map((group) => (
-        <div
-          key={group.label}
-          style={{
-            flex: "1 1 300px", // Allows columns to split 50/50 but wraps if below 300px
-            minWidth: 0,
-          }}
-        >
-          {/* Period divider */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              margin: "10px 0 4px",
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border-tertiary)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 500,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--color-text-tertiary)",
-              }}
-            >
-              {group.label}
-            </span>
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border-tertiary)",
-              }}
-            />
-          </div>
+  const firstHalf = grouped.find((g) => g.order === 1);
+  const secondHalf = grouped.find((g) => g.order === 2);
+  const extraPeriods = grouped.filter((g) => g.order > 2);
+  const homeTeamId = data.home_team?.id;
 
-          {group.events.map((ev) => {
-            const es = eventStyle(ev.event_type);
-            const isHome = ev.team_id === data.home_team?.id;
-            return (
-              <div
-                key={ev.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                }}
-              >
-                <span
-                  style={{
-                    minWidth: 28,
-                    textAlign: "right",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: "var(--color-text-tertiary)",
-                  }}
-                >
-                  {ev.event_time != null ? `${ev.event_time}'` : "—"}
-                </span>
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 13,
-                    background: es.bg,
-                    color: es.color,
-                  }}
-                >
-                  {es.icon}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 500,
-                      color: "var(--color-text-primary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {ev.player_display_name ?? "Unknown player"}
-                  </div>
-                  {ev.description && ev.description !== ev.event_type && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--color-text-secondary)",
-                      }}
-                    >
-                      {ev.description}
-                    </div>
-                  )}
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    flexShrink: 0,
-                    color: isHome ? "#185FA5" : "#854F0B",
-                  }}
-                >
-                  {isHome ? "Home" : "Away"}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+  return (
+    <div className="flex flex-col gap-3">
+      {/* First half | Second half — two columns */}
+      <div className="flex gap-3 items-start">
+        <PeriodColumn
+          label={firstHalf?.label ?? "First Half"}
+          events={firstHalf?.events ?? []}
+          homeTeamId={homeTeamId}
+        />
+        <PeriodColumn
+          label={secondHalf?.label ?? "Second Half"}
+          events={secondHalf?.events ?? []}
+          homeTeamId={homeTeamId}
+        />
+      </div>
+      {/* Extra time, penalties etc. — full width */}
+      {extraPeriods.map((g) => (
+        <PeriodColumn
+          key={g.label}
+          label={g.label}
+          events={g.events}
+          homeTeamId={homeTeamId}
+        />
       ))}
     </div>
   );
@@ -630,58 +416,28 @@ function EventsPanel({ data }: { data: FixtureDetailsResponse }) {
 function PlayerRow({ p }: { p: RosterPlayers }) {
   const isCoach = p.role_slug === "coach" || p.role_slug === "manager";
   const name =
-    p.display_name ?? `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
+    p.display_name ??
+    (`${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unknown");
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "5px 6px",
-        borderRadius: 6,
-      }}
-    >
-      <span
-        style={{
-          fontSize: 11,
-          fontWeight: 500,
-          minWidth: 26,
-          textAlign: "right",
-          color: "var(--color-text-secondary)",
-        }}
-      >
+    <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-hover">
+      <span className="text-[10px] font-semibold min-w-6 text-right text-t3 tabular-nums shrink-0">
         {p.shirt_number ? `#${p.shirt_number}` : "—"}
       </span>
       <div
-        style={avatar(
-          isCoach
-            ? "var(--color-background-info)"
-            : "var(--color-background-secondary)",
-          isCoach ? "var(--color-text-info)" : "var(--color-text-secondary)",
-          28,
-        )}
+        className={`size-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold border border-line ${
+          isCoach ? "bg-violet-subtle text-violet-on" : "bg-input text-t2"
+        }`}
       >
-        {initials(name || "?")}
+        {initials(name)}
       </div>
+      <span className="flex-1 text-xs font-medium text-t1 truncate">{name}</span>
       <span
-        style={{
-          flex: 1,
-          fontSize: 12,
-          color: "var(--color-text-primary)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {name}
-      </span>
-      <span
-        style={pill(
+        className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${
           isCoach
-            ? "var(--color-background-info)"
-            : "var(--color-background-secondary)",
-          isCoach ? "var(--color-text-info)" : "var(--color-text-secondary)",
-        )}
+            ? "bg-violet-subtle text-violet-on border-violet-edge"
+            : "bg-input text-t2 border-line"
+        }`}
       >
         {p.role_slug}
       </span>
@@ -693,66 +449,39 @@ function TeamColumn({
   teamName,
   clubName,
   players,
-  dotColor,
-  avatarBg,
-  avatarColor,
+  side,
 }: {
   teamName: string | null | undefined;
   clubName: string | null | undefined;
   players: RosterPlayers[];
-  dotColor: string;
-  avatarBg: string;
-  avatarColor: string;
+  side: "home" | "away";
 }) {
+  const headerBg = side === "home" ? "bg-blue-subtle" : "bg-amber-subtle";
+  const avatarBg = side === "home" ? "bg-blue-on" : "bg-amber-on";
+
   return (
-    <div style={{ flex: 1, minWidth: 0 }}>
+    <div className="flex-1 min-w-0">
       {/* Team header */}
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 8,
-        }}
+        className={`flex items-center gap-2 mb-2 px-3 py-2.5 rounded-[10px] border border-line ${headerBg}`}
       >
         <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            background: dotColor,
-            flexShrink: 0,
-          }}
-        />
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--color-text-primary)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          className={`size-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 ${avatarBg}`}
+        >
+          {initials(teamName ?? "T")}
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs font-semibold text-t1 truncate">
             {teamName ?? "Team"}
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "var(--color-text-secondary)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {clubName}
-          </div>
+          {clubName && (
+            <div className="text-[11px] text-t2 truncate">{clubName}</div>
+          )}
         </div>
       </div>
 
       {/* Player list */}
-      <div style={{ ...card, padding: "6px" }}>
+      <div className="bg-card border border-line rounded-[10px] p-1">
         {players.length ? (
           players.map((p) => (
             <PlayerRow
@@ -761,14 +490,7 @@ function TeamColumn({
             />
           ))
         ) : (
-          <div
-            style={{
-              padding: "12px 8px",
-              textAlign: "center",
-              fontSize: 12,
-              color: "var(--color-text-tertiary)",
-            }}
-          >
+          <div className="py-4 px-2 text-center text-xs text-t3">
             No players listed.
           </div>
         )}
@@ -779,32 +501,18 @@ function TeamColumn({
 
 function RosterPanel({ data }: { data: FixtureDetailsResponse }) {
   return (
-    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+    <div className="flex gap-3 items-start">
       <TeamColumn
         teamName={data.home_team?.team_name}
         clubName={data.home_team?.club_name}
         players={data.roster.home_team}
-        dotColor="#185FA5"
-        avatarBg="#E6F1FB"
-        avatarColor="#185FA5"
-      />
-      {/* Divider */}
-      <div
-        style={{
-          width: "0.5px",
-          background: "var(--color-border-tertiary)",
-          alignSelf: "stretch",
-          flexShrink: 0,
-          marginTop: 30,
-        }}
+        side="home"
       />
       <TeamColumn
         teamName={data.away_team?.team_name}
         clubName={data.away_team?.club_name}
         players={data.roster.away_team}
-        dotColor="#854F0B"
-        avatarBg="#FAEEDA"
-        avatarColor="#854F0B"
+        side="away"
       />
     </div>
   );
@@ -812,19 +520,37 @@ function RosterPanel({ data }: { data: FixtureDetailsResponse }) {
 
 // ─── Venue tab ────────────────────────────────────────────────────────────────
 
+function VenueField({
+  icon,
+  label,
+  value,
+}: {
+  icon: string;
+  label: string;
+  value: string | null | undefined;
+}) {
+  return (
+    <div className="flex flex-col gap-1 p-3 bg-input rounded-lg border border-line">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-t3 uppercase tracking-[0.05em]">
+        <i className={`ti ${icon} text-[12px]`} />
+        {label}
+      </div>
+      <span
+        className={`text-[13px] font-medium ${value ? "text-t1" : "text-t3"}`}
+      >
+        {value || "—"}
+      </span>
+    </div>
+  );
+}
+
 function VenuePanel({ data }: { data: FixtureDetailsResponse }) {
   const g = data.ground;
   if (!g)
     return (
-      <div
-        style={{
-          padding: "32px 0",
-          textAlign: "center",
-          fontSize: 13,
-          color: "var(--color-text-tertiary)",
-        }}
-      >
-        No venue information.
+      <div className="py-12 text-center flex flex-col items-center gap-2.5 text-t3">
+        <i className="ti ti-building-off text-[36px]" />
+        <span className="text-[13px]">No venue information.</span>
       </div>
     );
 
@@ -833,149 +559,37 @@ function VenuePanel({ data }: { data: FixtureDetailsResponse }) {
     : null;
 
   return (
-    <div style={card}>
-      {/* Header Section */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 14,
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 8,
-            background: "var(--color-background-info)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-          }}
-        >
-          🏟
+    <div className="flex flex-col gap-3">
+      {/* Stadium header */}
+      <div className="flex items-center gap-3.5 px-[18px] py-4 bg-thead border border-line rounded-[14px]">
+        <div className="size-11 rounded-[10px] bg-blue-subtle border border-line flex items-center justify-center text-blue-on text-[22px] shrink-0">
+          <i className="ti ti-building-stadium" />
         </div>
         <div>
-          <div
-            style={{
-              fontWeight: 500,
-              fontSize: 14,
-              color: "var(--color-text-primary)",
-            }}
-          >
-            {g.ground_name}
-          </div>
+          <div className="font-semibold text-[15px] text-t1">{g.ground_name}</div>
           {g.field && (
-            <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+            <div className="text-xs text-t2 mt-[3px]">
               {g.field.field_name} · {g.field.field_code}
             </div>
           )}
         </div>
       </div>
 
-      {/* Details Section */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          paddingTop: 12,
-          borderTop: "0.5px solid var(--color-border-tertiary)",
-        }}
-      >
-        {/* Row 1: Field, Address, Timezone (3 Columns) */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 24,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              Field
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {fieldVal || "—"}
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              Address
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {g.address || "—"}
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              Timezone
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {g.timezone || "—"}
-            </span>
-          </div>
-        </div>
-
-        {/* Row 2: Latitude, Longitude, Empty Cell (3 Columns) */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 24,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              Latitude
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {g.latitude?.toString() || "—"}
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              Longitude
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {g.longitude?.toString() || "—"}
-            </span>
-          </div>
-          {/* Explicitly empty 3rd column to maintain symmetry with row 1 */}
-          <div></div>
-        </div>
+      {/* Details grid */}
+      <div className="grid grid-cols-3 gap-2">
+        <VenueField icon="ti-layout-grid" label="Field" value={fieldVal} />
+        <VenueField icon="ti-map-pin" label="Address" value={g.address} />
+        <VenueField icon="ti-clock" label="Timezone" value={g.timezone} />
+        <VenueField
+          icon="ti-compass"
+          label="Latitude"
+          value={g.latitude?.toString()}
+        />
+        <VenueField
+          icon="ti-compass"
+          label="Longitude"
+          value={g.longitude?.toString()}
+        />
       </div>
     </div>
   );
@@ -985,24 +599,14 @@ function VenuePanel({ data }: { data: FixtureDetailsResponse }) {
 
 function Skeleton() {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        padding: "8px 0",
-      }}
-    >
-      {[80, 100, 60, 90, 70].map((w, i) => (
+    <div className="flex flex-col gap-3 py-2">
+      <div className="h-[200px] rounded-2xl bg-thead border border-line" />
+      <div className="h-11 rounded-[10px] bg-input border border-line" />
+      {[90, 75, 85, 60, 80].map((w, i) => (
         <div
           key={i}
-          style={{
-            height: 12,
-            borderRadius: 6,
-            background: "var(--color-background-secondary)",
-            width: `${w}%`,
-            animation: "pulse 1.5s infinite",
-          }}
+          className="h-11 rounded-lg bg-input"
+          style={{ width: `${w}%` }}
         />
       ))}
     </div>
@@ -1038,7 +642,7 @@ export default function MatchDetailsModal({
           throw new Error("Unexpected API response shape");
         setData(raw);
       })
-      .catch((e) => {
+      .catch(() => {
         if (!ctrl.signal.aborted)
           setError("Unable to load fixture details. Please try again.");
       });
@@ -1049,28 +653,17 @@ export default function MatchDetailsModal({
     <Modal
       title="Match Details"
       onClose={onClose}
-      className="h-[80vh] w-[80vw] max-h-[80vh] max-w-[80vw]"
-      contentClassName="px-5 py-4 overflow-y-auto"
+      className="h-[85vh] w-[80vw] max-h-[85vh] max-w-[900px]"
     >
       {error ? (
-        <p
-          style={{
-            fontSize: 13,
-            color: "var(--color-text-secondary)",
-            padding: "16px 0",
-          }}
-        >
-          {error}
-        </p>
+        <div className="py-10 text-center flex flex-col items-center gap-2.5">
+          <i className="ti ti-alert-circle text-[36px] text-red-on" />
+          <p className="text-[13px] text-t2">{error}</p>
+        </div>
       ) : !data ? (
         <Skeleton />
       ) : (
-        <div
-          style={{
-            fontFamily: "var(--font-sans)",
-            color: "var(--color-text-primary)",
-          }}
-        >
+        <div className="text-t1">
           <HeroSection data={data} />
           <Tabs active={tab} onChange={setTab} />
           {tab === "events" && <EventsPanel data={data} />}

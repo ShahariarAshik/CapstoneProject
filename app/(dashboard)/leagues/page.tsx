@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
+import GenerateReportModal from "@/components/GenerateReportModal";
+import Toast from "@/components/Toast";
 import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
@@ -33,6 +35,8 @@ export default function LeaguesPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [column, setColumn] = useState(COLS[0]);
+  const [generateFor, setGenerateFor] = useState<League | null>(null);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [validationError, setValidationError] =
     useState<ValidationReport | null>(null);
 
@@ -102,13 +106,8 @@ export default function LeaguesPage() {
   return (
     <div className="max-w-7xl">
       <div className="mb-8">
-        <h1
-          className="text-3xl font-bold mb-1"
-          style={{ color: "var(--text-1)" }}
-        >
-          Leagues
-        </h1>
-        <p className="text-sm" style={{ color: "var(--text-2)" }}>
+        <h1 className="text-3xl font-bold mb-1 text-t1">Leagues</h1>
+        <p className="text-sm text-t2">
           Browse leagues and generate league summary.
         </p>
       </div>
@@ -117,32 +116,17 @@ export default function LeaguesPage() {
         <SearchBar columns={COLS} onSearch={handleSearch} />
       </div>
 
-      <div
-        className="rounded-2xl overflow-hidden border"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <div
-          className="px-5 py-3.5 border-b"
-          style={{
-            background: "var(--bg-thead)",
-            borderColor: "var(--border)",
-          }}
-        >
-          <span
-            className="text-xs font-medium"
-            style={{ color: "var(--text-2)" }}
-          >
+      <div className="rounded-2xl overflow-hidden border border-line">
+        <div className="px-5 py-3.5 border-b border-line bg-thead">
+          <span className="text-xs font-medium text-t2">
             {loading ? "Loading…" : `${filtered.length} leagues`}
           </span>
         </div>
 
-        <div
-          className="overflow-x-auto"
-          style={{ background: "var(--bg-card)" }}
-        >
+        <div className="overflow-x-auto bg-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b" style={{ borderColor: "var(--border)" }}>
+              <tr className="border-b border-line bg-thead">
                 {[
                   "#",
                   "League Name",
@@ -154,8 +138,7 @@ export default function LeaguesPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
-                    style={{ color: "var(--text-3)" }}
+                    className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-t3"
                   >
                     {h}
                   </th>
@@ -165,17 +148,10 @@ export default function LeaguesPage() {
             <tbody>
               {loading ? (
                 [...Array(5)].map((_, i) => (
-                  <tr
-                    key={i}
-                    className="border-t"
-                    style={{ borderColor: "var(--divider)" }}
-                  >
+                  <tr key={i} className="border-t border-divider">
                     {[...Array(7)].map((_, j) => (
                       <td key={j} className="px-5 py-4">
-                        <div
-                          className="h-3 rounded animate-pulse w-20"
-                          style={{ background: "var(--bg-input)" }}
-                        />
+                        <div className="h-4 rounded animate-pulse w-20 bg-input" />
                       </td>
                     ))}
                   </tr>
@@ -184,8 +160,7 @@ export default function LeaguesPage() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-5 py-10 text-center text-sm"
-                    style={{ color: "var(--text-3)" }}
+                    className="px-5 py-10 text-center text-sm text-t3"
                   >
                     No leagues match your search.
                   </td>
@@ -194,47 +169,19 @@ export default function LeaguesPage() {
                 rows.map((league) => (
                   <tr
                     key={league.id}
-                    className="transition-colors border-t"
-                    style={{ borderColor: "var(--divider)" }}
-                    onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background =
-                        "var(--bg-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background =
-                        "transparent")
-                    }
+                    className="transition-colors border-t border-divider hover:bg-hover"
                   >
-                    <td
-                      className="px-5 py-4 text-xs font-mono"
-                      style={{ color: "var(--text-3)" }}
-                    >
+                    <td className="px-5 py-4 text-xs font-mono text-t3">
                       {league.id}
                     </td>
-                    <td
-                      className="px-5 py-4 font-medium"
-                      style={{ color: "var(--text-1)" }}
-                    >
+                    <td className="px-5 py-4 font-medium text-t1">
                       {league.name}
                     </td>
-                    <td
-                      className="px-5 py-4 font-mono text-xs"
-                      style={{ color: "var(--text-2)" }}
-                    >
+                    <td className="px-5 py-4 font-mono text-xs text-t2">
                       {league.competition_name}
                     </td>
-                    <td
-                      className="px-5 py-4"
-                      style={{ color: "var(--text-2)" }}
-                    >
-                      {league.season}
-                    </td>
-                    <td
-                      className="px-5 py-4"
-                      style={{ color: "var(--text-2)" }}
-                    >
-                      {league.matches}
-                    </td>
+                    <td className="px-5 py-4 text-t2">{league.season}</td>
+                    <td className="px-5 py-4 text-t2">{league.matches}</td>
                     <td className="px-5 py-4">
                       <Badge color={statusColor(league.status)} dot>
                         {league.status}
@@ -242,7 +189,10 @@ export default function LeaguesPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition whitespace-nowrap">
+                        <button
+                          onClick={() => setGenerateFor(league)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                        >
                           Generate Report
                         </button>
                       </div>
@@ -267,6 +217,26 @@ export default function LeaguesPage() {
         <ApiValidationError
           report={validationError}
           onClose={() => setValidationError(null)}
+        />
+      )}
+
+      {generateFor && (
+        <GenerateReportModal
+          context="league"
+          name={`${generateFor.name} — ${generateFor.season}`}
+          onClose={() => setGenerateFor(null)}
+          onGenerate={async () => {
+            // TODO: wire league report endpoints when available
+            setToast({ type: "success", message: "Report Generation Request Created. Please check the Jobs tab to track the progress." });
+          }}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onDismiss={() => setToast(null)}
         />
       )}
     </div>

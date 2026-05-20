@@ -50,13 +50,6 @@ export default function Pagination({
     }
   };
 
-  const btnBase: React.CSSProperties = {
-    background: "var(--bg-input)",
-    borderColor: "var(--border)",
-    color: "var(--text-2)",
-    border: "1px solid var(--border)",
-  };
-
   return (
     <div className="mt-6 flex flex-col items-center gap-2">
       <div className="flex items-center gap-1">
@@ -64,8 +57,8 @@ export default function Pagination({
         <button
           onClick={() => go(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          style={btnBase}
+          aria-label="Previous page"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-input border border-line text-t2 hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
         >
           ← Prev
         </button>
@@ -75,8 +68,7 @@ export default function Pagination({
           page === "…" ? (
             <span
               key={`el-${i}`}
-              className="w-8 h-8 flex items-center justify-center text-sm select-none"
-              style={{ color: "var(--text-3)" }}
+              className="w-8 h-8 flex items-center justify-center text-sm select-none text-t3"
             >
               ···
             </span>
@@ -84,16 +76,11 @@ export default function Pagination({
             <button
               key={page}
               onClick={() => go(page as number)}
-              className="w-8 h-8 rounded-lg text-sm font-medium transition-colors"
-              style={
+              className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 ${
                 currentPage === page
-                  ? {
-                      background: "#4f46e5",
-                      color: "#ffffff",
-                      border: "1px solid transparent",
-                    }
-                  : btnBase
-              }
+                  ? "bg-indigo-600 text-white border border-transparent"
+                  : "bg-input border border-line text-t2 hover:bg-hover"
+              }`}
             >
               {page}
             </button>
@@ -104,23 +91,18 @@ export default function Pagination({
         <button
           onClick={() => go(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          style={btnBase}
+          aria-label="Next page"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-input border border-line text-t2 hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
         >
           Next →
         </button>
 
         {/* Divider */}
-        <span
-          className="mx-1 h-4 w-px"
-          style={{ background: "var(--border)" }}
-        />
+        <span className="mx-1 h-4 w-px bg-line" />
 
         {/* Jump to page */}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: "var(--text-3)" }}>
-            Go to
-          </span>
+          <span className="text-xs text-t3">Go to</span>
           <input
             type="number"
             min={1}
@@ -129,17 +111,11 @@ export default function Pagination({
             onChange={(e) => setJumpValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleJump()}
             placeholder="…"
-            className="w-14 h-8 px-2 rounded-lg text-xs text-center border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            style={btnBase}
+            className="w-14 h-8 px-2 rounded-lg text-xs text-center border border-line focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500/60 transition [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none bg-input text-t2"
           />
           <button
             onClick={handleJump}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-            style={{
-              background: "#4f46e5",
-              color: "#fff",
-              border: "1px solid transparent",
-            }}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white border border-transparent hover:bg-indigo-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
           >
             Go
           </button>
@@ -148,7 +124,7 @@ export default function Pagination({
 
       {/* Count below */}
       {from && to && totalItems && (
-        <p className="text-xs" style={{ color: "var(--text-3)" }}>
+        <p className="text-xs text-t3">
           Showing {from}-{to} of {totalItems}
         </p>
       )}

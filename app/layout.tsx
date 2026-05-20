@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -27,18 +28,19 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Set data-theme from localStorage before React hydrates — prevents flash */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('dribl-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
-          }}
-        />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
         />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('dribl-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+          }}
+        />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

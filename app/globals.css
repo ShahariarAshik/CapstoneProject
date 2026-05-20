@@ -1,5 +1,42 @@
 @import "tailwindcss";
 
+@theme {
+  /* Structural backgrounds */
+  --color-page:    var(--bg-page);
+  --color-surface: var(--bg-surface);
+  --color-input:   var(--bg-input);
+  --color-hover:   var(--bg-hover);
+  --color-card:    var(--bg-card);
+  --color-thead:   var(--bg-thead);
+
+  /* Borders / dividers */
+  --color-line:    var(--border);
+  --color-divider: var(--divider);
+
+  /* Text */
+  --color-t1: var(--text-1);
+  --color-t2: var(--text-2);
+  --color-t3: var(--text-3);
+
+  /* Muted badge tones — used in static (non-interpolated) contexts */
+  --color-indigo-subtle: var(--badge-indigo-bg);
+  --color-indigo-on:     var(--badge-indigo-text);
+  --color-indigo-edge:   var(--badge-indigo-border);
+  --color-red-subtle:    var(--badge-red-bg);
+  --color-red-on:        var(--badge-red-text);
+  --color-red-edge:      var(--badge-red-border);
+  --color-amber-subtle:  var(--badge-amber-bg);
+  --color-amber-on:      var(--badge-amber-text);
+  --color-amber-edge:    var(--badge-amber-border);
+  --color-blue-subtle:   var(--badge-blue-bg);
+  --color-blue-on:       var(--badge-blue-text);
+  --color-emerald-subtle: var(--badge-emerald-bg);
+  --color-emerald-on:    var(--badge-emerald-text);
+  --color-violet-subtle: var(--badge-violet-bg);
+  --color-violet-on:     var(--badge-violet-text);
+  --color-violet-edge:   var(--badge-violet-border);
+}
+
 /* ─────────────────────────────────────────────────────────────
    Design tokens — toggled via  data-theme="dark" | "light"
    on <html>.  No Tailwind dark: variants needed.
@@ -151,6 +188,20 @@ body {
   transition:
     background-color 0.15s,
     color 0.15s;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 1.25rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.toast-enter {
+  animation: toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes shake {

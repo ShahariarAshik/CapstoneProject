@@ -66,13 +66,8 @@ export default function HomePage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-10">
-        <h1
-          className="text-3xl font-bold mb-2"
-          style={{ color: "var(--text-1)" }}
-        >
-          Dashboard
-        </h1>
-        <p className="text-sm" style={{ color: "var(--text-2)" }}>
+        <h1 className="text-3xl font-bold mb-2 text-t1">Dashboard</h1>
+        <p className="text-sm text-t2">
           Welcome back — here&apos;s an overview of your platform activity.
         </p>
       </div>
@@ -82,11 +77,8 @@ export default function HomePage() {
           <Link
             key={title}
             href={href}
-            className="relative group rounded-2xl p-6 border transition-all duration-200 cursor-pointer"
-            style={{
-              background: "var(--bg-card)",
-              borderColor: `var(--badge-${color}-border)`,
-            }}
+            className="relative group rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer bg-card"
+            style={{ borderColor: `var(--badge-${color}-border)` }}
           >
             <div className="mb-5">
               <span
@@ -100,22 +92,14 @@ export default function HomePage() {
               </span>
             </div>
 
-            <p
-              className="text-4xl font-bold tracking-tight mb-1"
-              style={{ color: "var(--text-1)" }}
-            >
+            <p className="text-4xl font-bold tracking-tight mb-1 text-t1">
               {stats ? (
                 stats[key]
               ) : (
-                <span
-                  className="inline-block w-10 h-8 rounded animate-pulse align-middle"
-                  style={{ background: "var(--bg-input)" }}
-                />
+                <span className="inline-block w-10 h-8 rounded animate-pulse align-middle bg-input" />
               )}
             </p>
-            <p className="text-sm" style={{ color: "var(--text-2)" }}>
-              {title}
-            </p>
+            <p className="text-sm text-t2">{title}</p>
 
             <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <ArrowRight

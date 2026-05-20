@@ -91,7 +91,7 @@ export interface Match {
   id: number;
   homeTeam: string;
   awayTeam: string;
-  location: string;
+  field: string;
   date: string;
   time: string;
   status: "Pending" | "Completed" | "No Data";
@@ -108,7 +108,6 @@ export interface JobItem {
   tone: "serious" | "comedy";
   start_time: string; // ISO 8601
   status: "pending" | "completed";
-  progress: number; // 0-100
 }
 
 export interface GetJobsResponse {
@@ -122,7 +121,6 @@ export interface Job {
   tone: "Serious" | "Comedy";
   startTime: string;
   status: "Pending" | "Completed";
-  progress: number;
 }
 
 // ─── Reports ──────────────────────────────────────────────────────────────────
@@ -142,10 +140,12 @@ export interface GetReportsResponse {
 
 export interface Report {
   id: number;
+  reportId: string;
   name: string;
   type: ReportItem["type"];
   createdAt: string;
   tone: "Serious" | "Comedy";
+  content?: string;
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

@@ -42,25 +42,15 @@ export default function SearchBar({
     onSearch("", selectedCol);
   };
 
-  const inputStyle = {
-    background: "var(--bg-input)",
-    borderColor: "var(--border)",
-    color: "var(--text-1)",
-  };
-
-  const dropStyle = {
-    background: "var(--bg-surface)",
-    borderColor: "var(--border)",
-  };
-
   return (
     <div className="flex items-center gap-2">
       {/* Column dropdown */}
       <div className="relative shrink-0" ref={dropRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="h-9 flex items-center gap-1.5 px-3 rounded-xl text-xs font-medium whitespace-nowrap border transition-colors"
-          style={inputStyle}
+          aria-label={`Search by ${selectedCol}`}
+          aria-expanded={open}
+          className="h-9 flex items-center gap-1.5 px-3 rounded-xl text-xs font-medium whitespace-nowrap border border-line transition-colors bg-input text-t1 hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
         >
           {selectedCol}
           <ChevronDown
@@ -70,33 +60,16 @@ export default function SearchBar({
         </button>
 
         {open && (
-          <div
-            className="absolute top-full left-0 mt-1.5 z-30 min-w-[160px] rounded-xl overflow-hidden shadow-xl border"
-            style={dropStyle}
-          >
+          <div className="absolute top-full left-0 mt-1.5 z-30 min-w-[160px] rounded-xl overflow-hidden shadow-xl border border-line bg-surface">
             {columns.map((col) => (
               <button
                 key={col}
                 onClick={() => handleCol(col)}
-                className="block w-full text-left px-4 py-2.5 text-xs font-medium transition-colors"
-                style={
+                className={`block w-full text-left px-4 py-2.5 text-xs font-medium transition-colors ${
                   selectedCol === col
-                    ? {
-                        background: "var(--badge-indigo-bg)",
-                        color: "var(--badge-indigo-text)",
-                      }
-                    : { color: "var(--text-2)" }
-                }
-                onMouseEnter={(e) => {
-                  if (selectedCol !== col)
-                    (e.currentTarget as HTMLElement).style.background =
-                      "var(--bg-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedCol !== col)
-                    (e.currentTarget as HTMLElement).style.background =
-                      "transparent";
-                }}
+                    ? "bg-indigo-subtle text-indigo-on"
+                    : "text-t2 hover:bg-hover"
+                }`}
               >
                 {col}
               </button>
@@ -109,22 +82,20 @@ export default function SearchBar({
       <div className="relative flex-1 min-w-0">
         <Search
           size={13}
-          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: "var(--text-3)" }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-t3"
         />
         <input
           type="text"
           value={query}
           onChange={(e) => handleQuery(e.target.value)}
           placeholder={placeholder ?? `Search by ${selectedCol}…`}
-          className="w-full h-9 pl-9 pr-8 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition placeholder:text-[var(--text-3)]"
-          style={inputStyle}
+          className="w-full h-9 pl-9 pr-8 text-sm rounded-xl border border-line focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500/60 transition placeholder:text-t3 bg-input text-t1"
         />
         {query && (
           <button
             onClick={clear}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors"
-            style={{ color: "var(--text-3)" }}
+            aria-label="Clear search"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors text-t3 hover:text-t1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 rounded"
           >
             <X size={12} />
           </button>

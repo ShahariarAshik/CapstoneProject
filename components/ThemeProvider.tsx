@@ -10,18 +10,14 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize theme from localStorage on client, "dark" on server
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("dribl-theme") as Theme) ?? "dark";
-    }
-    return "dark";
-  });
+  // Always start with "dark" to match server render, then sync from localStorage after mount
+  const [theme, setTheme] = useState<Theme>("dark");
 
-  // Update document attribute when theme changes
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    const stored = (localStorage.getItem("dribl-theme") as Theme) ?? "dark";
+    setTheme(stored);
+    document.documentElement.setAttribute("data-theme", stored);
+  }, []);
 
   const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
