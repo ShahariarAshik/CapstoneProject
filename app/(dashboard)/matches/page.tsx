@@ -1,182 +1,332 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { Info } from "lucide-react";
+import Pagination from "@/components/Pagination";
+import SearchBar from "@/components/SearchBar";
+import Badge from "@/components/Badge";
+import MatchDetailsModal from "@/components/MatchDetailsModal";
+import GenerateReportModal from "@/components/GenerateReportModal";
+import Toast from "@/components/Toast";
+import ApiValidationError from "@/components/ApiValidationError";
+import { API_URL } from "@/lib/config";
+import { apiFetch } from "@/lib/api";
+import { validateItems } from "@/lib/validate";
+import { useNotification } from "@/lib/notification-context";
+import type { ValidationReport } from "@/lib/validate";
+import type {
+  Match,
+  FixtureItem,
+  GetFixturesResponse,
+  BadgeColor,
+} from "@/lib/types";
 
-type Match = {
-  id: number;
-  homeTeam: string;
-  awayTeam: string;
-  location: string;
-  datetime: string;
-  status: "Ongoing" | "Completed" | "Cancelled" | "No Data";
-};
+type DetailedMatch = Match & { fixtureId: string | number };
+
+const REQUIRED_FIELDS: (keyof FixtureItem)[] = [
+  "home_team_id",
+  "home_team_name",
+  "away_team_id",
+  "away_team_name",
+];
+
+const COLS = ["Home Team", "Away Team", "Field", "Status"];
+const PER_PAGE = 10;
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const matchesPerPage = 10;
+  const [matches, setMatches] = useState<DetailedMatch[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [column, setColumn] = useState(COLS[0]);
+  const [selectedFixtureId, setSelectedFixtureId] = useState<
+    string | number | null
+  >(null);
+  const [generateFor, setGenerateFor] = useState<DetailedMatch | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const { startJobPolling } = useNotification();
 
-  // Fetch API
+  const TONE_MAP: Record<string, string> = {
+    Professional: "professional",
+    Serious: "serious",
+    Funny: "funny",
+  };
+  const [validationError, setValidationError] =
+    useState<ValidationReport | null>(null);
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/fixtures/get-fixtures")
-      .then((res) => res.json())
-      .then((data) => {
+    apiFetch(`${API_URL}/api/fixtures/get-fixtures`)
+      .then((r) => r.json())
+      .then((data: GetFixturesResponse) => {
+        const report = validateItems(
+          data.fixtures,
+          REQUIRED_FIELDS,
+          "/api/fixtures/get-fixtures",
+        );
+        if (!report.valid) {
+          setValidationError(report);
+          return;
+        }
+        if (report.empty) {
+          setValidationError(report);
+        }
+
         const mapped = data.fixtures
-          .map((item: any, index: number) => {
-            // ❗ STRICT FILTER: skip if ANY required field missing
-            if (
-              !item.home_team_id ||
-              !item.away_team_id ||
-              !item.ground_id ||
-              !item.utc_datetime
-            ) {
-              return null;
-            }
-
-            const dateObj = new Date(item.utc_datetime);
-
-            // Extra safety: invalid date
-            if (isNaN(dateObj.getTime())) return null;
-
-            const formattedDate = dateObj.toLocaleDateString();
-            const formattedTime = dateObj.toLocaleTimeString();
-
+          .map((item: FixtureItem, i: number) => {
+            const d = new Date(item.utc_datetime ?? "");
+            if (isNaN(d.getTime())) return null;
+            const record = item as unknown as Record<string, unknown>;
             return {
-              id: index + 1,
-              homeTeam: item.home_team_id,
-              awayTeam: item.away_team_id,
-              location: item.ground_id,
-              datetime: `${formattedDate}, ${formattedTime} (${item.duration} mins)`,
+              id: i + 1,
+              fixtureId: record.fixture_id ?? record.id ?? i + 1,
+              homeTeam: item.home_team_name,
+              awayTeam: item.away_team_name,
+              field: item.ground_name ?? "",
+              date: d.toLocaleDateString(),
+              time:
+                item.duration != null
+                  ? `${d.toLocaleTimeString()} (${item.duration} mins)`
+                  : d.toLocaleTimeString(),
               status:
-                item.event_status === "completed"
+                item.event_status === "complete"
                   ? "Completed"
-                  : item.event_status === "ongoing"
-                  ? "Ongoing"
-                  : item.event_status === "cancelled"
-                  ? "Cancelled"
-                  : "No Data",
-            };
+                  : item.event_status === "pending"
+                    ? "Pending"
+                    : "No Data",
+              homeScore: item.home_score ?? null,
+              awayScore: item.away_score ?? null,
+            } as DetailedMatch;
           })
-          .filter(Boolean); // remove nulls
-
+          .filter((m): m is DetailedMatch => m !== null);
         setMatches(mapped);
       })
-      .catch((err) => console.error("API error:", err));
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const indexOfLast = currentPage * matchesPerPage;
-  const indexOfFirst = indexOfLast - matchesPerPage;
-  const currentMatches = matches.slice(indexOfFirst, indexOfLast);
+  const filtered = useMemo(() => {
+    if (!query.trim()) return matches;
+    const q = query.toLowerCase();
+    return matches.filter((m) => {
+      switch (column) {
+        case "Home Team":
+          return m.homeTeam.toLowerCase().includes(q);
+        case "Away Team":
+          return m.awayTeam.toLowerCase().includes(q);
+        case "Field":
+          return (m.field ?? "").toLowerCase().includes(q);
+        case "Status":
+          return m.status.toLowerCase().includes(q);
+        default:
+          return true;
+      }
+    });
+  }, [query, column, matches]);
 
-  const totalPages = Math.ceil(matches.length / matchesPerPage);
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const rows = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const handleSearch = (q: string, col: string) => {
+    setQuery(q);
+    setColumn(col);
+    setPage(1);
+  };
+
+  const statusColor = (s: Match["status"]): BadgeColor =>
+    s === "Completed" ? "emerald" : s === "Pending" ? "amber" : "gray";
 
   return (
-    <div>
-      {/* Title */}
-      <h1 className="text-2xl font-bold mb-6">Match Details</h1>
+    <div className="max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-1 text-t1">Matches</h1>
+        <p className="text-sm text-t2">
+          View all matches and generate match reports.
+        </p>
+      </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 text-sm text-gray-600">
-            <tr>
-              <th className="p-4">#</th>
-              <th className="p-4">Home Team</th>
-              <th className="p-4">Away Team</th>
-              <th className="p-4">Location</th>
-              <th className="p-4">Date & Time</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
+      <div className="mb-4">
+        <SearchBar columns={COLS} onSearch={handleSearch} />
+      </div>
 
-          <tbody>
-            {currentMatches.map((match) => {
-              const [date, time] = match.datetime.split(",");
+      <div className="rounded-2xl overflow-hidden border border-line">
+        <div className="px-5 py-3.5 border-b border-line bg-thead">
+          <span className="text-xs font-medium text-t2">
+            {loading ? "Loading…" : `${filtered.length} fixtures`}
+          </span>
+        </div>
 
-              return (
-                <tr key={match.id} className="border-t hover:bg-gray-50">
-                  <td className="p-4">{match.id}</td>
-                  <td className="p-4">{match.homeTeam}</td>
-                  <td className="p-4">{match.awayTeam}</td>
-                  <td className="p-4">{match.location}</td>
-
-                  <td className="p-4">
-                    <div className="text-sm font-medium text-gray-800">
-                      {date}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {time}
-                    </div>
-                  </td>
-
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        match.status === "Completed"
-                          ? "bg-green-100 text-green-700"
-                          : match.status === "Ongoing"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : match.status === "Cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      {match.status}
-                    </span>
-                  </td>
-
-                  <td className="p-4">
-                    <button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
-                      Generate Report
-                    </button>
+        <div className="overflow-x-auto bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-line bg-thead">
+                {[
+                  "#",
+                  "Home Team",
+                  "Score",
+                  "Away Team",
+                  "Field",
+                  "Date & Time",
+                  "Status",
+                  "Actions",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-t3"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(6)].map((_, i) => (
+                  <tr key={i} className="border-t border-divider">
+                    {[...Array(8)].map((_, j) => (
+                      <td key={j} className="px-5 py-4">
+                        <div className="h-4 rounded animate-pulse w-20 bg-input" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-5 py-10 text-center text-sm text-t3"
+                  >
+                    No matches found.
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ) : (
+                rows.map((match) => (
+                  <tr
+                    key={match.id}
+                    className="transition-colors border-t border-divider hover:bg-hover"
+                  >
+                    <td className="px-5 py-4 text-xs font-mono text-t3">
+                      {match.id}
+                    </td>
+                    <td className="px-5 py-4 font-medium whitespace-nowrap text-t1">
+                      {match.homeTeam}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap font-mono font-semibold text-sm text-t1">
+                      {match.homeScore ?? "-"} : {match.awayScore ?? "-"}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap text-t2">
+                      {match.awayTeam}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap text-t2">
+                      {match.field}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <p className="text-xs font-medium text-t1">
+                        {match.date}
+                      </p>
+                      <p className="text-xs mt-0.5 text-t3">{match.time}</p>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge color={statusColor(match.status)} dot>
+                        {match.status}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedFixtureId(match.fixtureId)}
+                          className="btn-ghost flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                        >
+                          <Info size={12} /> Details
+                        </button>
+                        <button
+                          onClick={() => setGenerateFor(match)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                        >
+                          Generate Report
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center mt-6 space-x-2">
-        {/* Previous */}
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-        >
-          {"<"}
-        </button>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        itemsPerPage={PER_PAGE}
+        onPageChange={setPage}
+      />
 
-        {/* Page Numbers */}
-        {[currentPage - 1, currentPage, currentPage + 1]
-          .filter((page) => page > 0 && page <= totalPages)
-          .map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 rounded ${
-                currentPage === page
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+      {validationError && (
+        <ApiValidationError
+          report={validationError}
+          onClose={() => setValidationError(null)}
+        />
+      )}
 
-        {/* Next */}
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-        >
-          {">"}
-        </button>
-      </div>
+      {selectedFixtureId !== null && (
+        <MatchDetailsModal
+          key={selectedFixtureId}
+          fixtureId={selectedFixtureId}
+          onClose={() => setSelectedFixtureId(null)}
+        />
+      )}
+
+      {generateFor && (
+        <GenerateReportModal
+          context="match"
+          name={`${generateFor.homeTeam} vs ${generateFor.awayTeam}`}
+          onClose={() => setGenerateFor(null)}
+          onGenerate={async (reportName, reportType, tone) => {
+            const REPORT_TYPE_MAP: Record<string, string> = {
+              "Pre Match Report": "pre_match",
+              "Post Match Report": "post_match",
+            };
+            const apiReportType = REPORT_TYPE_MAP[reportType];
+            if (!apiReportType) {
+              setToast({ type: "error", message: "Unsupported report type." });
+              return;
+            }
+            const params = new URLSearchParams({
+              fixture_id: String(generateFor.fixtureId),
+              report_type: apiReportType,
+              tone: TONE_MAP[tone] ?? tone.toLowerCase(),
+              report_name: reportName,
+            });
+            const res = await apiFetch(
+              `${API_URL}/api/report-generation/queue/match?${params}`,
+            );
+            const data = await res.json();
+            if (!res.ok || data?.error || data?.message) {
+              setToast({
+                type: "error",
+                message: data?.error ?? data?.message ?? `Failed to queue report (${res.status}).`,
+              });
+              return;
+            }
+            startJobPolling(data.report_request_id);
+            setToast({
+              type: "success",
+              message: "Report request created — check the Jobs tab for progress.",
+            });
+          }}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

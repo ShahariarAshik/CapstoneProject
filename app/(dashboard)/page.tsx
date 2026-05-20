@@ -1,36 +1,114 @@
-// app/(dashboard)/page.tsx
-
 "use client";
 
-import { FileText, Calendar, Trophy, Briefcase } from "lucide-react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  FileText,
+  Calendar,
+  Trophy,
+  Briefcase,
+  ArrowRight,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { API_URL } from "@/lib/config";
+import { apiFetch } from "@/lib/api";
+import type { DashboardStatsResponse, BadgeColor } from "@/lib/types";
+
+interface DashboardCard {
+  key: keyof DashboardStatsResponse;
+  title: string;
+  icon: LucideIcon;
+  color: BadgeColor;
+  href: string;
+}
+
+const CARDS: DashboardCard[] = [
+  {
+    key: "total_reports",
+    title: "Reports Generated",
+    icon: FileText,
+    color: "indigo",
+    href: "/reports",
+  },
+  {
+    key: "total_matches",
+    title: "Matches Played",
+    icon: Calendar,
+    color: "violet",
+    href: "/matches",
+  },
+  {
+    key: "total_leagues",
+    title: "Leagues",
+    icon: Trophy,
+    color: "blue",
+    href: "/leagues",
+  },
+  {
+    key: "total_jobs",
+    title: "Jobs",
+    icon: Briefcase,
+    color: "purple",
+    href: "/jobs",
+  },
+];
 
 export default function HomePage() {
-  const stats = [
-    { title: "Reports Generated", value: 50, icon: FileText },
-    { title: "Matches Played", value: 15, icon: Calendar },
-    { title: "Leagues", value: 12, icon: Trophy },
-    { title: "Jobs", value: 10, icon: Briefcase },
-  ];
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
+
+  useEffect(() => {
+    apiFetch(`${API_URL}/api/stats/get-stats`)
+      .then((r) => r.json())
+      .then((data: DashboardStatsResponse) => setStats(data))
+      .catch(console.error);
+  }, []);
 
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold text-center">Home</h1>
+    <div className="max-w-4xl">
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold mb-2 text-t1">Dashboard</h1>
+        <p className="text-sm text-t2">
+          Welcome back — here&apos;s an overview of your platform activity.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-6 mt-8">
-        {stats.map((item, index) => {
-          const Icon = item.icon;
-
-          return (
-            <div
-              key={index}
-              className="p-6 rounded-2xl shadow bg-white flex flex-col items-center"
-            >
-              <Icon size={30} className="mb-3 text-gray-700" />
-              <h2 className="text-2xl font-bold">{item.value}</h2>
-              <p className="text-gray-500">{item.title}</p>
+      <div className="grid grid-cols-2 gap-5">
+        {CARDS.map(({ key, title, icon: Icon, color, href }) => (
+          <Link
+            key={title}
+            href={href}
+            className="relative group rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer bg-card"
+            style={{ borderColor: `var(--badge-${color}-border)` }}
+          >
+            <div className="mb-5">
+              <span
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ background: `var(--badge-${color}-bg)` }}
+              >
+                <Icon
+                  size={18}
+                  style={{ color: `var(--badge-${color}-text)` }}
+                />
+              </span>
             </div>
-          );
-        })}
+
+            <p className="text-4xl font-bold tracking-tight mb-1 text-t1">
+              {stats ? (
+                stats[key]
+              ) : (
+                <span className="inline-block w-10 h-8 rounded animate-pulse align-middle bg-input" />
+              )}
+            </p>
+            <p className="text-sm text-t2">{title}</p>
+
+            <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <ArrowRight
+                size={14}
+                style={{ color: `var(--badge-${color}-text)` }}
+              />
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

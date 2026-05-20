@@ -1,118 +1,217 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import Pagination from "@/components/Pagination";
+import SearchBar from "@/components/SearchBar";
+import Badge from "@/components/Badge";
+import ApiValidationError from "@/components/ApiValidationError";
+import { API_URL } from "@/lib/config";
+import { apiFetch } from "@/lib/api";
+import { validateItems } from "@/lib/validate";
+import type { ValidationReport } from "@/lib/validate";
+import type { Job, JobItem, GetJobsResponse, BadgeColor } from "@/lib/types";
 
-type Job = {
-  id: number;
-  name: string;
-  reportType: string;
-  tone: string;
-  startTime: string;
-  status: "Ongoing" | "Completed";
-  progress: number;
-};
+const toneColor = (t: Job["tone"]): BadgeColor =>
+  t === "Serious" ? "indigo" : "amber";
+const statusColor = (s: Job["status"]): BadgeColor =>
+  s === "Completed" ? "emerald" : "amber";
+
+const REQUIRED_FIELDS: (keyof JobItem)[] = [
+  "id",
+  "name",
+  "report_type",
+  "tone",
+  "start_time",
+  "status",
+];
+
+const COLS = ["Job Name", "Report Type", "Tone", "Status"];
+const PER_PAGE = 10;
 
 export default function JobsPage() {
-  const jobs: Job[] = [
-    { id: 1, name: "Lions vs Tigers", reportType: "Post Match Report", tone: "Serious", startTime: "2026-04-20 14:30", status: "Completed", progress: 100 },
-    { id: 2, name: "Eagles vs Hawks", reportType: "Pre Match Report", tone: "Comedy", startTime: "2026-04-21 10:00", status: "Completed", progress: 100 },
-    { id: 3, name: "Round 5 Summary", reportType: "League Summary", tone: "Serious", startTime: "2026-04-22 18:00", status: "Ongoing", progress: 60 },
-    { id: 4, name: "Sharks vs Bulls", reportType: "Post Match Report", tone: "Comedy", startTime: "2026-04-23 15:45", status: "Ongoing", progress: 75 },
-    { id: 5, name: "Wolves vs Panthers", reportType: "Pre Match Report", tone: "Serious", startTime: "2026-04-24 09:00", status: "Completed", progress: 100 },
-    { id: 6, name: "Round 6 Summary", reportType: "League Summary", tone: "Comedy", startTime: "2026-04-25 20:00", status: "Ongoing", progress: 40 },
-    { id: 7, name: "Falcons vs Knights", reportType: "Post Match Report", tone: "Serious", startTime: "2026-04-26 16:20", status: "Completed", progress: 100 },
-    { id: 8, name: "Dragons vs Titans", reportType: "Pre Match Report", tone: "Comedy", startTime: "2026-04-27 11:10", status: "Ongoing", progress: 50 },
-    { id: 9, name: "Round 7 Summary", reportType: "League Summary", tone: "Serious", startTime: "2026-04-28 19:30", status: "Ongoing", progress: 30 },
-    { id: 10, name: "Rangers vs City", reportType: "Post Match Report", tone: "Comedy", startTime: "2026-04-29 14:00", status: "Completed", progress: 100 },
-    { id: 11, name: "United vs Stars", reportType: "Pre Match Report", tone: "Serious", startTime: "2026-04-30 10:00", status: "Ongoing", progress: 20 },
-    { id: 12, name: "Round 8 Summary", reportType: "League Summary", tone: "Comedy", startTime: "2026-05-01 21:00", status: "Ongoing", progress: 10 },
-  ];
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [column, setColumn] = useState(COLS[0]);
+  const [validationError, setValidationError] =
+    useState<ValidationReport | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 10;
+  useEffect(() => {
+    apiFetch(`${API_URL}/api/report-requests/get-report-requests`)
+      .then((r) => r.json())
+      .then((data: GetJobsResponse) => {
+        const report = validateItems(
+          data.jobs,
+          REQUIRED_FIELDS,
+          "/api/report-requests/get-report-requests",
+        );
+        if (!report.valid) {
+          setValidationError(report);
+          return;
+        }
+        if (report.empty) {
+          setValidationError(report);
+        }
 
-  const indexOfLast = currentPage * jobsPerPage;
-  const indexOfFirst = indexOfLast - jobsPerPage;
-  const currentJobs = jobs.slice(indexOfFirst, indexOfLast);
+        setJobs(
+          data.jobs.map((item: JobItem, i: number) => {
+            const d = new Date(item.start_time);
+            return {
+              id: i + 1,
+              name: item.name,
+              reportType: item.report_type,
+              tone: item.tone === "comedy" ? "Comedy" : "Serious",
+              startTime: isNaN(d.getTime())
+                ? item.start_time
+                : d.toLocaleString(),
+              status: item.status === "completed" ? "Completed" : "Pending",
+            };
+          }),
+        );
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const totalPages = Math.ceil(jobs.length / jobsPerPage);
+  const filtered = useMemo(() => {
+    if (!query.trim()) return jobs;
+    const q = query.toLowerCase();
+    return jobs.filter((j) => {
+      switch (column) {
+        case "Job Name":
+          return j.name.toLowerCase().includes(q);
+        case "Report Type":
+          return j.reportType.toLowerCase().includes(q);
+        case "Tone":
+          return j.tone.toLowerCase().includes(q);
+        case "Status":
+          return j.status.toLowerCase().includes(q);
+        default:
+          return true;
+      }
+    });
+  }, [query, column, jobs]);
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const rows = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const handleSearch = (q: string, col: string) => {
+    setQuery(q);
+    setColumn(col);
+    setPage(1);
+  };
 
   return (
-    <div>
-      {/* Title */}
-      <h1 className="text-2xl font-bold mb-6">Jobs</h1>
+    <div className="max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-1 text-t1">Jobs</h1>
+        <p className="text-sm text-t2">
+          Track report generation jobs and their progress.
+        </p>
+      </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 text-sm text-gray-600">
-            <tr>
-              <th className="p-4">#</th>
-              <th className="p-4">Job Name</th>
-              <th className="p-4">Report Type</th>
-              <th className="p-4">Tone</th>
-              <th className="p-4">Start Time</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Progress</th>
-            </tr>
-          </thead>
+      <div className="mb-4">
+        <SearchBar columns={COLS} onSearch={handleSearch} />
+      </div>
 
-          <tbody>
-            {currentJobs.map((job) => (
-              <tr key={job.id} className="border-t hover:bg-gray-50">
-                <td className="p-4">{job.id}</td>
-                <td className="p-4">{job.name}</td>
-                <td className="p-4">{job.reportType}</td>
-                <td className="p-4">{job.tone}</td>
-                <td className="p-4">{job.startTime}</td>
+      <div className="rounded-2xl overflow-hidden border border-line">
+        <div className="px-5 py-3.5 border-b border-line bg-thead">
+          <span className="text-xs font-medium text-t2">
+            {loading
+              ? "Loading…"
+              : `${filtered.length} ${filtered.length === jobs.length ? "total" : "matching"} jobs`}
+          </span>
+        </div>
 
-                {/* Status Badge */}
-                <td className="p-4">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      job.status === "Completed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
+        <div className="overflow-x-auto bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-line bg-thead">
+                {[
+                  "#",
+                  "Job Name",
+                  "Report Type",
+                  "Tone",
+                  "Start Time",
+                  "Status",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-t3"
                   >
-                    {job.status}
-                  </span>
-                </td>
-
-                {/* Progress */}
-                <td className="p-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${job.progress}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-xs text-gray-600">
-                    {job.progress}%
-                  </span>
-                </td>
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i} className="border-t border-divider">
+                    {[...Array(6)].map((_, j) => (
+                      <td key={j} className="px-5 py-4">
+                        <div className="h-4 rounded animate-pulse w-20 bg-input" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-5 py-10 text-center text-sm text-t3"
+                  >
+                    No jobs match your search.
+                  </td>
+                </tr>
+              ) : (
+                rows.map((job) => (
+                  <tr
+                    key={job.id}
+                    className="transition-colors border-t border-divider hover:bg-hover"
+                  >
+                    <td className="px-5 py-4 text-xs font-mono text-t3">
+                      {job.id}
+                    </td>
+                    <td className="px-5 py-4 font-medium whitespace-nowrap text-t1">
+                      {job.name}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap text-t2">
+                      {job.reportType}
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge color={toneColor(job.tone)}>{job.tone}</Badge>
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap text-xs font-mono text-t2">
+                      {job.startTime}
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge color={statusColor(job.status)} dot>
+                        {job.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center mt-6 space-x-2">
-        {[...Array(totalPages)].map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentPage(index + 1)}
-            className={`px-3 py-1 rounded ${
-              currentPage === index + 1
-                ? "bg-gray-900 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        itemsPerPage={PER_PAGE}
+        onPageChange={setPage}
+      />
+
+      {validationError && (
+        <ApiValidationError
+          report={validationError}
+          onClose={() => setValidationError(null)}
+        />
+      )}
     </div>
   );
 }

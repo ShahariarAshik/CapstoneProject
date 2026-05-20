@@ -2,54 +2,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home, FileText, Calendar, Trophy, Briefcase } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const menuItems = [
-  { name: "Home", href: "/" },
-  { name: "Reports", href: "/reports" },
-  { name: "Matches", href: "/matches" },
-  { name: "Leagues", href: "/leagues" },
-  { name: "Jobs", href: "/jobs" },
+interface NavItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+const menuItems: NavItem[] = [
+  { name: "Home", href: "/", icon: Home },
+  { name: "Reports", href: "/reports", icon: FileText },
+  { name: "Matches", href: "/matches", icon: Calendar },
+  { name: "Leagues", href: "/leagues", icon: Trophy },
+  { name: "Jobs", href: "/jobs", icon: Briefcase },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      
-     
-      <div className="p-6 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-800">
-          Dribl
-        </h1>
-      </div>
+    <aside className="w-56 flex flex-col shrink-0 h-full border-r border-line bg-surface">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-t3">
+          Navigation
+        </p>
 
-      
-      <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => {
-          const isActive = pathname === item.href;
-
+        {menuItems.map(({ name, href, icon: Icon }) => {
+          const isActive = pathname === href;
           return (
             <Link
-              key={item.name}
-              href={item.href}
-              className={`block px-4 py-2 rounded-lg text-sm font-medium transition
-                ${
-                  isActive
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+              key={name}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 ${
+                isActive
+                  ? "bg-indigo-subtle text-indigo-on border border-indigo-edge"
+                  : "text-t2 hover:bg-hover"
+              }`}
             >
-              {item.name}
+              <Icon
+                size={15}
+                className={isActive ? "text-indigo-on" : "text-t2"}
+              />
+              {name}
             </Link>
           );
         })}
       </nav>
 
-      
-      <div className="p-4 border-t border-gray-100 text-sm text-gray-500">
-        © {new Date().getFullYear()}
+      <div className="px-4 py-3 border-t border-line">
+        <p className="text-[10px] text-t3">
+          © {new Date().getFullYear()} Dribl Inc.
+        </p>
       </div>
-    </div>
+    </aside>
   );
 }
