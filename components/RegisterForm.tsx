@@ -13,22 +13,10 @@ interface PasswordRule {
   label: string;
   test: (password: string) => boolean;
 }
-
-interface RegisterStat {
-  value: string;
-  label: string;
-}
-
 const passwordRules: PasswordRule[] = [
   { label: "At least 8 characters", test: (p) => p.length >= 8 },
   { label: "One uppercase letter", test: (p) => /[A-Z]/.test(p) },
   { label: "One number", test: (p) => /\d/.test(p) },
-];
-
-const stats: RegisterStat[] = [
-  { value: "10k+", label: "Reports generated" },
-  { value: "500+", label: "Leagues managed" },
-  { value: "99.9%", label: "Uptime SLA" },
 ];
 
 export default function RegisterForm() {
@@ -117,18 +105,6 @@ export default function RegisterForm() {
             Join thousands of leagues and clubs already using Dribl to run their
             reporting operations smarter and faster.
           </p>
-
-          <div className="grid grid-cols-3 gap-6">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="border-l-2 border-indigo-500/30 pl-4"
-              >
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="text-gray-500 text-xs mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         <p className="text-gray-700 text-xs">

@@ -233,8 +233,8 @@ export default function GenerateReportModal({
           <SelectField
             label="Round"
             value={selectedRound.toString()}
-            options={available_rounds.map(String)} 
-            onChange={(v) => setSelectedRound(Number(v))} 
+            options={available_rounds.map(String)}
+            onChange={(v) => setSelectedRound(Number(v))}
           />
         )}
 
