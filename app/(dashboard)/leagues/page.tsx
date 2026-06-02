@@ -6,25 +6,14 @@ import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
 import GenerateReportModal from "@/components/GenerateReportModal";
 import Toast from "@/components/Toast";
-import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
-import { validateItems } from "@/lib/validate";
-import type { ValidationReport } from "@/lib/validate";
 import type {
   League,
   LeagueItem,
   GetLeaguesResponse,
   BadgeColor,
 } from "@/lib/types";
-
-const REQUIRED_FIELDS: (keyof LeagueItem)[] = [
-  "id",
-  "league_name",
-  "season",
-  "matches",
-  "status",
-];
 
 const COLS = ["League Name", "Competition", "Season", "Status"];
 const PER_PAGE = 10;
@@ -37,26 +26,11 @@ export default function LeaguesPage() {
   const [column, setColumn] = useState(COLS[0]);
   const [generateFor, setGenerateFor] = useState<League | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [validationError, setValidationError] =
-    useState<ValidationReport | null>(null);
 
   useEffect(() => {
     apiFetch(`${API_URL}/api/leagues/get-leagues`)
       .then((r) => r.json())
       .then((data: GetLeaguesResponse) => {
-        const report = validateItems(
-          data.leagues,
-          REQUIRED_FIELDS,
-          "/api/leagues/get-leagues",
-        );
-        if (!report.valid) {
-          setValidationError(report);
-          return;
-        }
-        if (report.empty) {
-          setValidationError(report);
-        }
-
         setLeagues(
           data.leagues.map((item: LeagueItem, i: number) => ({
             id: i + 1,
@@ -162,7 +136,7 @@ export default function LeaguesPage() {
                     colSpan={7}
                     className="px-5 py-10 text-center text-sm text-t3"
                   >
-                    No leagues match your search.
+                    No leagues found.
                   </td>
                 </tr>
               ) : (
@@ -213,20 +187,12 @@ export default function LeaguesPage() {
         onPageChange={setPage}
       />
 
-      {validationError && (
-        <ApiValidationError
-          report={validationError}
-          onClose={() => setValidationError(null)}
-        />
-      )}
-
       {generateFor && (
         <GenerateReportModal
           context="league"
           name={`${generateFor.name} — ${generateFor.season}`}
           onClose={() => setGenerateFor(null)}
           onGenerate={async () => {
-            // TODO: wire league report endpoints when available
             setToast({ type: "success", message: "Report Generation Request Created. Please check the Jobs tab to track the progress." });
           }}
         />

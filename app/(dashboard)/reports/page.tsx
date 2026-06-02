@@ -3,28 +3,17 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Download, Eye, Pencil, Check } from "lucide-react";
 import Modal from "@/components/Modal";
-import ApiValidationError from "@/components/ApiValidationError";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
-import { validateItems } from "@/lib/validate";
-import type { ValidationReport } from "@/lib/validate";
 import type {
   Report,
   ReportItem,
   GetReportsResponse,
   BadgeColor,
 } from "@/lib/types";
-
-const REQUIRED_FIELDS: (keyof ReportItem)[] = [
-  "id",
-  "name",
-  "type",
-  "created_at",
-  "tone",
-];
 
 const COLS = ["Report Name", "Report Type", "Tone"];
 const PER_PAGE = 10;
@@ -57,26 +46,11 @@ export default function ReportsPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
-  const [validationError, setValidationError] =
-    useState<ValidationReport | null>(null);
 
   useEffect(() => {
     apiFetch(`${API_URL}/api/reports/get-reports`)
       .then((r) => r.json())
       .then((data: GetReportsResponse) => {
-        const report = validateItems(
-          data.reports,
-          REQUIRED_FIELDS,
-          "/api/reports/get-reports",
-        );
-        if (!report.valid) {
-          setValidationError(report);
-          return;
-        }
-        if (report.empty) {
-          setValidationError(report);
-        }
-
         setReports(
           data.reports.map((item: ReportItem, i: number) => {
             const d = new Date(item.created_at);
@@ -190,7 +164,7 @@ export default function ReportsPage() {
                     colSpan={6}
                     className="px-5 py-10 text-center text-sm text-t3"
                   >
-                    No reports match your search.
+                    No reports found.
                   </td>
                 </tr>
               ) : (
@@ -253,13 +227,6 @@ export default function ReportsPage() {
         itemsPerPage={PER_PAGE}
         onPageChange={setPage}
       />
-
-      {validationError && (
-        <ApiValidationError
-          report={validationError}
-          onClose={() => setValidationError(null)}
-        />
-      )}
 
       {viewReport && (
         <Modal
