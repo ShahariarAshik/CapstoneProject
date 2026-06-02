@@ -10,7 +10,12 @@ interface ToastProps {
   duration?: number;
 }
 
-export default function Toast({ message, type = "success", onDismiss, duration = 5000 }: ToastProps) {
+export default function Toast({
+  message,
+  type = "success",
+  onDismiss,
+  duration = 5000,
+}: ToastProps) {
   useEffect(() => {
     const t = setTimeout(onDismiss, duration);
     return () => clearTimeout(t);
@@ -24,9 +29,11 @@ export default function Toast({ message, type = "success", onDismiss, duration =
         isError ? "border-red-edge" : "border-emerald-edge"
       }`}
     >
-      {isError
-        ? <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-on" />
-        : <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-on" />}
+      {isError ? (
+        <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-on" />
+      ) : (
+        <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-on" />
+      )}
       <p className="flex-1 text-sm leading-snug text-t1">{message}</p>
       <button
         onClick={onDismiss}

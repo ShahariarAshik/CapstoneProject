@@ -17,8 +17,14 @@ const TONES = ["Professional", "Serious", "Funny"];
 interface GenerateReportModalProps {
   context: Context;
   name: string;
+  available_rounds?: number[];
   onClose: () => void;
-  onGenerate: (reportName: string, reportType: string, tone: string) => Promise<void>;
+  onGenerate: (
+    reportName: string,
+    reportType: string,
+    tone: string,
+    round_number?: number,
+  ) => Promise<void>;
 }
 
 function SelectField({
@@ -38,7 +44,8 @@ function SelectField({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
-    if (triggerRef.current) setTriggerRect(triggerRef.current.getBoundingClientRect());
+    if (triggerRef.current)
+      setTriggerRect(triggerRef.current.getBoundingClientRect());
     setOpen((o) => !o);
   };
 
@@ -70,12 +77,15 @@ function SelectField({
         left: triggerRect.left,
         width: triggerRect.width,
         zIndex: 9999,
+        maxHeight: "165px", // Safely fits 4 options before scrolling
       }
     : {};
 
   return (
     <div>
-      <label className="block text-xs font-semibold mb-2 text-t2">{label}</label>
+      <label className="block text-xs font-semibold mb-2 text-t2">
+        {label}
+      </label>
       <button
         ref={triggerRef}
         type="button"
@@ -85,7 +95,9 @@ function SelectField({
         <span className="flex-1 truncate">{value}</span>
         <ChevronDown
           size={12}
-          className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-150 text-t3 ${open ? "rotate-180" : ""}`}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-150 text-t3 ${
+            open ? "rotate-180" : ""
+          }`}
         />
       </button>
 
@@ -94,7 +106,7 @@ function SelectField({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="rounded-xl border border-line shadow-xl overflow-hidden bg-surface"
+            className="rounded-xl border border-line shadow-xl overflow-y-auto bg-surface"
           >
             {options.map((opt) => (
               <button
@@ -124,6 +136,7 @@ function SelectField({
 export default function GenerateReportModal({
   context,
   name,
+  available_rounds = [],
   onClose,
   onGenerate,
 }: GenerateReportModalProps) {
@@ -131,6 +144,7 @@ export default function GenerateReportModal({
   const [reportNameError, setReportNameError] = useState(false);
   const [reportType, setReportType] = useState(REPORT_TYPES[context][0]);
   const [tone, setTone] = useState(TONES[0]);
+  const [selectedRound, setSelectedRound] = useState(available_rounds[0] || 1);
   const [generating, setGenerating] = useState(false);
 
   const handleGenerate = async () => {
@@ -140,7 +154,12 @@ export default function GenerateReportModal({
     }
     setGenerating(true);
     try {
-      await onGenerate(reportName.trim(), reportType, tone);
+      await onGenerate(
+        reportName.trim(),
+        reportType,
+        tone,
+        context === "league" ? selectedRound : undefined,
+      );
       onClose();
     } finally {
       setGenerating(false);
@@ -185,7 +204,10 @@ export default function GenerateReportModal({
           <input
             type="text"
             value={reportName}
-            onChange={(e) => { setReportName(e.target.value); setReportNameError(false); }}
+            onChange={(e) => {
+              setReportName(e.target.value);
+              setReportNameError(false);
+            }}
             placeholder="Enter a name for this report…"
             className={`w-full h-9 px-3 rounded-xl border text-sm transition focus:outline-none focus:ring-2 bg-input text-t1 placeholder:text-t3 ${
               reportNameError
@@ -194,7 +216,9 @@ export default function GenerateReportModal({
             }`}
           />
           {reportNameError && (
-            <p className="mt-1.5 text-xs text-red-on">Report name is required.</p>
+            <p className="mt-1.5 text-xs text-red-on">
+              Report name is required.
+            </p>
           )}
         </div>
 
@@ -204,6 +228,15 @@ export default function GenerateReportModal({
           options={REPORT_TYPES[context]}
           onChange={setReportType}
         />
+
+        {context !== "match" && available_rounds.length > 0 && (
+          <SelectField
+            label="Round"
+            value={selectedRound.toString()}
+            options={available_rounds.map(String)} 
+            onChange={(v) => setSelectedRound(Number(v))} 
+          />
+        )}
 
         <SelectField
           label="Tone"

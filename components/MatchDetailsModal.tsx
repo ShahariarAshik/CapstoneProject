@@ -76,13 +76,25 @@ type EventStyle = { iconClass: string; colorClass: string };
 function eventStyle(type: string | null | undefined): EventStyle {
   const t = (type ?? "").toLowerCase();
   if (t.includes("goal"))
-    return { iconClass: "ti ti-ball-football", colorClass: "bg-emerald-subtle text-emerald-on" };
+    return {
+      iconClass: "ti ti-ball-football",
+      colorClass: "bg-emerald-subtle text-emerald-on",
+    };
   if (t.includes("yellow"))
-    return { iconClass: "ti ti-square-rounded-filled", colorClass: "bg-amber-subtle text-amber-on" };
+    return {
+      iconClass: "ti ti-square-rounded-filled",
+      colorClass: "bg-amber-subtle text-amber-on",
+    };
   if (t.includes("red"))
-    return { iconClass: "ti ti-square-rounded-filled", colorClass: "bg-red-subtle text-red-on" };
+    return {
+      iconClass: "ti ti-square-rounded-filled",
+      colorClass: "bg-red-subtle text-red-on",
+    };
   if (t.includes("substitute"))
-    return { iconClass: "ti ti-arrows-exchange", colorClass: "bg-blue-subtle text-blue-on" };
+    return {
+      iconClass: "ti ti-arrows-exchange",
+      colorClass: "bg-blue-subtle text-blue-on",
+    };
   return { iconClass: "ti ti-circle-dot", colorClass: "bg-input text-t2" };
 }
 
@@ -91,7 +103,10 @@ type BadgeStyle = { label: string; colorClass: string };
 function statusStyle(s: string | null | undefined): BadgeStyle {
   const v = (s ?? "").toLowerCase();
   if (v === "complete" || v === "completed")
-    return { label: "Complete", colorClass: "bg-emerald-subtle text-emerald-on" };
+    return {
+      label: "Complete",
+      colorClass: "bg-emerald-subtle text-emerald-on",
+    };
   if (v === "in_progress" || v === "live")
     return { label: "Live", colorClass: "bg-red-subtle text-red-on" };
   if (v === "scheduled" || v === "upcoming")
@@ -431,7 +446,9 @@ function PlayerRow({ p }: { p: RosterPlayers }) {
       >
         {initials(name)}
       </div>
-      <span className="flex-1 text-xs font-medium text-t1 truncate">{name}</span>
+      <span className="flex-1 text-xs font-medium text-t1 truncate">
+        {name}
+      </span>
       <span
         className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${
           isCoach
@@ -566,7 +583,9 @@ function VenuePanel({ data }: { data: FixtureDetailsResponse }) {
           <i className="ti ti-building-stadium" />
         </div>
         <div>
-          <div className="font-semibold text-[15px] text-t1">{g.ground_name}</div>
+          <div className="font-semibold text-[15px] text-t1">
+            {g.ground_name}
+          </div>
           {g.field && (
             <div className="text-xs text-t2 mt-[3px]">
               {g.field.field_name} · {g.field.field_code}

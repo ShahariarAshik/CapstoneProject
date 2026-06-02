@@ -275,14 +275,18 @@ export default function MatchesPage() {
             if (!res.ok || data?.error || data?.message) {
               setToast({
                 type: "error",
-                message: data?.error ?? data?.message ?? `Failed to queue report (${res.status}).`,
+                message:
+                  data?.error ??
+                  data?.message ??
+                  `Failed to queue report (${res.status}).`,
               });
               return;
             }
             startJobPolling(data.report_request_id);
             setToast({
               type: "success",
-              message: "Report request created — check the Jobs tab for progress.",
+              message:
+                "Report request created — check the Jobs tab for progress.",
             });
           }}
         />

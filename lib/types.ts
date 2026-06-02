@@ -51,6 +51,7 @@ export interface LeagueItem {
   season: string;
   matches: number;
   status: "pending" | "completed";
+  available_rounds: number[];
 }
 
 export interface GetLeaguesResponse {
@@ -65,6 +66,7 @@ export interface League {
   season: string | number;
   matches: number | string;
   status: "Pending" | "Completed" | "No Data";
+  available_rounds: number[];
 }
 
 // ─── Fixtures / Matches ───────────────────────────────────────────────────────
