@@ -21,7 +21,8 @@ const PER_PAGE = 10;
 const typeColor: Record<ReportItem["type"], BadgeColor> = {
   "Post Match Report": "blue",
   "Pre Match Report": "purple",
-  "League Summary Report": "cyan",
+  "Pre Round League Summary Report": "cyan",
+  "Post Round League Summary Report": "violet",
 };
 
 function downloadAsText(filename: string, content: string) {
