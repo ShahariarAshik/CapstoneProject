@@ -52,6 +52,11 @@ export default function ReportsPage() {
     apiFetch(`${API_URL}/api/reports/get-reports`)
       .then((r) => r.json())
       .then((data: GetReportsResponse) => {
+        const toneMap: Record<string, Report["tone"]> = {
+          serious: "Serious",
+          funny: "Funny",
+          professional: "Professional",
+        };
         setReports(
           data.reports.map((item: ReportItem, i: number) => {
             const d = new Date(item.created_at);
@@ -63,7 +68,7 @@ export default function ReportsPage() {
               createdAt: isNaN(d.getTime())
                 ? item.created_at
                 : d.toLocaleString(),
-              tone: item.tone === "comedy" ? "Comedy" : "Serious",
+              tone: toneMap[item.tone] || "Serious",
               content: item.content,
             };
           }),
@@ -190,7 +195,7 @@ export default function ReportsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <Badge
-                        color={report.tone === "Comedy" ? "amber" : "indigo"}
+                        color={report.tone === "Funny" ? "amber" : "indigo"}
                       >
                         {report.tone}
                       </Badge>
@@ -315,7 +320,7 @@ export default function ReportsPage() {
               <Badge color={typeColor[viewReport.type] ?? "blue"}>
                 {viewReport.type}
               </Badge>
-              <Badge color={viewReport.tone === "Comedy" ? "amber" : "indigo"}>
+              <Badge color={viewReport.tone === "Funny" ? "amber" : "indigo"}>
                 {viewReport.tone}
               </Badge>
               <span className="text-xs font-mono text-t3">

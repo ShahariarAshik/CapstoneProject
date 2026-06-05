@@ -103,7 +103,7 @@ export interface JobItem {
   id: string | number;
   name: string;
   report_type: string;
-  tone: "serious" | "comedy" | "professional";
+  tone: "serious" | "funny" | "professional";
   start_time: string; // ISO 8601
   status: "pending" | "completed";
 }
@@ -116,7 +116,7 @@ export interface Job {
   id: number;
   name: string;
   reportType: string;
-  tone: "Serious" | "Comedy" | "Professional";
+  tone: "Serious" | "Funny" | "Professional";
   startTime: string;
   status: "Pending" | "Completed";
 }
@@ -132,7 +132,7 @@ export interface ReportItem {
     | "Pre Round League Summary Report"
     | "Post Round League Summary Report";
   created_at: string; // ISO 8601
-  tone: "serious" | "comedy" | "professional";
+  tone: "serious" | "funny" | "professional";
   content?: string;
 }
 
@@ -146,7 +146,7 @@ export interface Report {
   name: string;
   type: ReportItem["type"];
   createdAt: string;
-  tone: "Serious" | "Comedy" | "Professional";
+  tone: "Serious" | "Funny" | "Professional";
   content?: string;
 }
 

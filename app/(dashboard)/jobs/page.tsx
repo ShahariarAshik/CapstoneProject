@@ -9,18 +9,9 @@ import { apiFetch } from "@/lib/api";
 import type { Job, JobItem, GetJobsResponse, BadgeColor } from "@/lib/types";
 
 const toneColor = (t: Job["tone"]): BadgeColor =>
-  t === "Serious" ? "indigo" : "amber";
+  t === "Funny" ? "amber" : "indigo";
 const statusColor = (s: Job["status"]): BadgeColor =>
   s === "Completed" ? "emerald" : "amber";
-
-const REQUIRED_FIELDS: (keyof JobItem)[] = [
-  "id",
-  "name",
-  "report_type",
-  "tone",
-  "start_time",
-  "status",
-];
 
 const COLS = ["Job Name", "Report Type", "Tone", "Status"];
 const PER_PAGE = 10;
@@ -36,6 +27,11 @@ export default function JobsPage() {
     apiFetch(`${API_URL}/api/report-requests/get-report-requests`)
       .then((r) => r.json())
       .then((data: GetJobsResponse) => {
+        const toneMap: Record<string, Job["tone"]> = {
+          serious: "Serious",
+          funny: "Funny",
+          professional: "Professional",
+        };
         setJobs(
           data.jobs.map((item: JobItem, i: number) => {
             const d = new Date(item.start_time);
@@ -43,7 +39,7 @@ export default function JobsPage() {
               id: i + 1,
               name: item.name,
               reportType: item.report_type,
-              tone: item.tone === "comedy" ? "Comedy" : "Serious",
+              tone: toneMap[item.tone] || "Serious",
               startTime: isNaN(d.getTime())
                 ? item.start_time
                 : d.toLocaleString(),
