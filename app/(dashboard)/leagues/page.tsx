@@ -6,25 +6,15 @@ import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
 import GenerateReportModal from "@/components/GenerateReportModal";
 import Toast from "@/components/Toast";
-import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
-import { validateItems } from "@/lib/validate";
-import type { ValidationReport } from "@/lib/validate";
+import { useNotification } from "@/lib/notification-context";
 import type {
   League,
   LeagueItem,
   GetLeaguesResponse,
   BadgeColor,
 } from "@/lib/types";
-
-const REQUIRED_FIELDS: (keyof LeagueItem)[] = [
-  "id",
-  "league_name",
-  "season",
-  "matches",
-  "status",
-];
 
 const COLS = ["League Name", "Competition", "Season", "Status"];
 const PER_PAGE = 10;
@@ -36,27 +26,16 @@ export default function LeaguesPage() {
   const [query, setQuery] = useState("");
   const [column, setColumn] = useState(COLS[0]);
   const [generateFor, setGenerateFor] = useState<League | null>(null);
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [validationError, setValidationError] =
-    useState<ValidationReport | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const { startJobPolling } = useNotification();
 
   useEffect(() => {
     apiFetch(`${API_URL}/api/leagues/get-leagues`)
       .then((r) => r.json())
       .then((data: GetLeaguesResponse) => {
-        const report = validateItems(
-          data.leagues,
-          REQUIRED_FIELDS,
-          "/api/leagues/get-leagues",
-        );
-        if (!report.valid) {
-          setValidationError(report);
-          return;
-        }
-        if (report.empty) {
-          setValidationError(report);
-        }
-
         setLeagues(
           data.leagues.map((item: LeagueItem, i: number) => ({
             id: i + 1,
@@ -66,6 +45,7 @@ export default function LeaguesPage() {
             season: item.season,
             matches: item.matches,
             status: item.status === "completed" ? "Completed" : "Pending",
+            available_rounds: item.available_rounds,
           })),
         );
       })
@@ -162,7 +142,7 @@ export default function LeaguesPage() {
                     colSpan={7}
                     className="px-5 py-10 text-center text-sm text-t3"
                   >
-                    No leagues match your search.
+                    No leagues found.
                   </td>
                 </tr>
               ) : (
@@ -190,7 +170,10 @@ export default function LeaguesPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setGenerateFor(league)}
+                          onClick={() => {
+                            console.log(league);
+                            setGenerateFor(league);
+                          }}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
                         >
                           Generate Report
@@ -213,21 +196,54 @@ export default function LeaguesPage() {
         onPageChange={setPage}
       />
 
-      {validationError && (
-        <ApiValidationError
-          report={validationError}
-          onClose={() => setValidationError(null)}
-        />
-      )}
-
       {generateFor && (
         <GenerateReportModal
           context="league"
           name={`${generateFor.name} — ${generateFor.season}`}
+          available_rounds={generateFor.available_rounds}
           onClose={() => setGenerateFor(null)}
-          onGenerate={async () => {
-            // TODO: wire league report endpoints when available
-            setToast({ type: "success", message: "Report Generation Request Created. Please check the Jobs tab to track the progress." });
+          onGenerate={async (reportName, reportType, tone, round_number) => {
+            const REPORT_TYPE_MAP: Record<string, string> = {
+              "Pre Round League Summary": "pre_round",
+              "Post Round League Summary": "post_round",
+            };
+            const TONE_MAP: Record<string, string> = {
+              Professional: "professional",
+              Serious: "serious",
+              Funny: "funny",
+            };
+            const apiReportType = REPORT_TYPE_MAP[reportType];
+            if (!apiReportType) {
+              setToast({ type: "error", message: "Unsupported report type." });
+              return;
+            }
+            const params = new URLSearchParams({
+              league_id: String(generateFor.leagueId),
+              report_type: apiReportType,
+              tone: TONE_MAP[tone] ?? tone.toLowerCase(),
+              report_name: reportName,
+              round_number: String(round_number ?? ""),
+            });
+            const res = await apiFetch(
+              `${API_URL}/api/report-generation/queue/league?${params}`,
+            );
+            const data = await res.json();
+            if (!res.ok || data?.error || data?.message) {
+              setToast({
+                type: "error",
+                message:
+                  data?.error ??
+                  data?.message ??
+                  `Failed to queue report (${res.status}).`,
+              });
+              return;
+            }
+            startJobPolling?.(data.report_request_id);
+            setToast({
+              type: "success",
+              message:
+                "Report request created — check the Jobs tab for progress.",
+            });
           }}
         />
       )}

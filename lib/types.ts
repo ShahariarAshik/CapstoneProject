@@ -38,10 +38,6 @@ export interface FastApiFieldError {
   type: string;
 }
 
-export interface ApiErrorResponse {
-  detail: string | FastApiFieldError[];
-}
-
 // ─── Leagues ──────────────────────────────────────────────────────────────────
 
 export interface LeagueItem {
@@ -51,6 +47,7 @@ export interface LeagueItem {
   season: string;
   matches: number;
   status: "pending" | "completed";
+  available_rounds: number[];
 }
 
 export interface GetLeaguesResponse {
@@ -65,6 +62,7 @@ export interface League {
   season: string | number;
   matches: number | string;
   status: "Pending" | "Completed" | "No Data";
+  available_rounds: number[];
 }
 
 // ─── Fixtures / Matches ───────────────────────────────────────────────────────
@@ -105,7 +103,7 @@ export interface JobItem {
   id: string | number;
   name: string;
   report_type: string;
-  tone: "serious" | "comedy";
+  tone: "serious" | "funny" | "professional";
   start_time: string; // ISO 8601
   status: "pending" | "completed";
 }
@@ -118,7 +116,7 @@ export interface Job {
   id: number;
   name: string;
   reportType: string;
-  tone: "Serious" | "Comedy";
+  tone: "Serious" | "Funny" | "Professional";
   startTime: string;
   status: "Pending" | "Completed";
 }
@@ -128,9 +126,13 @@ export interface Job {
 export interface ReportItem {
   id: string | number;
   name: string;
-  type: "Post Match Report" | "Pre Match Report" | "League Summary Report";
+  type:
+    | "Post Match Report"
+    | "Pre Match Report"
+    | "Pre Round League Summary Report"
+    | "Post Round League Summary Report";
   created_at: string; // ISO 8601
-  tone: "serious" | "comedy";
+  tone: "serious" | "funny" | "professional";
   content?: string;
 }
 
@@ -144,7 +146,7 @@ export interface Report {
   name: string;
   type: ReportItem["type"];
   createdAt: string;
-  tone: "Serious" | "Comedy";
+  tone: "Serious" | "Funny" | "Professional";
   content?: string;
 }
 

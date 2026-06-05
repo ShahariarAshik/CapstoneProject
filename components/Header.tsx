@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sun, Moon, ChevronDown, LogOut, User } from "lucide-react";
+import { Sun, Moon, ChevronDown, LogOut /*, User*/ } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { clearToken, getToken, decodeToken } from "@/lib/auth";
 
@@ -108,10 +108,10 @@ export default function Header() {
               </div>
 
               <div className="p-1">
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left text-t2 hover:bg-hover">
+                {/* <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left text-t2 hover:bg-hover">
                   <User size={13} className="text-t3" />
                   Profile
-                </button>
+                </button> */}
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left text-red-on hover:bg-red-subtle"

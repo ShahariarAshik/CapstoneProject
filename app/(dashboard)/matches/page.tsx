@@ -8,12 +8,9 @@ import Badge from "@/components/Badge";
 import MatchDetailsModal from "@/components/MatchDetailsModal";
 import GenerateReportModal from "@/components/GenerateReportModal";
 import Toast from "@/components/Toast";
-import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
-import { validateItems } from "@/lib/validate";
 import { useNotification } from "@/lib/notification-context";
-import type { ValidationReport } from "@/lib/validate";
 import type {
   Match,
   FixtureItem,
@@ -22,13 +19,6 @@ import type {
 } from "@/lib/types";
 
 type DetailedMatch = Match & { fixtureId: string | number };
-
-const REQUIRED_FIELDS: (keyof FixtureItem)[] = [
-  "home_team_id",
-  "home_team_name",
-  "away_team_id",
-  "away_team_name",
-];
 
 const COLS = ["Home Team", "Away Team", "Field", "Status"];
 const PER_PAGE = 10;
@@ -54,26 +44,11 @@ export default function MatchesPage() {
     Serious: "serious",
     Funny: "funny",
   };
-  const [validationError, setValidationError] =
-    useState<ValidationReport | null>(null);
 
   useEffect(() => {
     apiFetch(`${API_URL}/api/fixtures/get-fixtures`)
       .then((r) => r.json())
       .then((data: GetFixturesResponse) => {
-        const report = validateItems(
-          data.fixtures,
-          REQUIRED_FIELDS,
-          "/api/fixtures/get-fixtures",
-        );
-        if (!report.valid) {
-          setValidationError(report);
-          return;
-        }
-        if (report.empty) {
-          setValidationError(report);
-        }
-
         const mapped = data.fixtures
           .map((item: FixtureItem, i: number) => {
             const d = new Date(item.utc_datetime ?? "");
@@ -264,13 +239,6 @@ export default function MatchesPage() {
         onPageChange={setPage}
       />
 
-      {validationError && (
-        <ApiValidationError
-          report={validationError}
-          onClose={() => setValidationError(null)}
-        />
-      )}
-
       {selectedFixtureId !== null && (
         <MatchDetailsModal
           key={selectedFixtureId}
@@ -307,14 +275,18 @@ export default function MatchesPage() {
             if (!res.ok || data?.error || data?.message) {
               setToast({
                 type: "error",
-                message: data?.error ?? data?.message ?? `Failed to queue report (${res.status}).`,
+                message:
+                  data?.error ??
+                  data?.message ??
+                  `Failed to queue report (${res.status}).`,
               });
               return;
             }
             startJobPolling(data.report_request_id);
             setToast({
               type: "success",
-              message: "Report request created — check the Jobs tab for progress.",
+              message:
+                "Report request created — check the Jobs tab for progress.",
             });
           }}
         />

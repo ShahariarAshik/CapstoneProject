@@ -4,26 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import Badge from "@/components/Badge";
-import ApiValidationError from "@/components/ApiValidationError";
 import { API_URL } from "@/lib/config";
 import { apiFetch } from "@/lib/api";
-import { validateItems } from "@/lib/validate";
-import type { ValidationReport } from "@/lib/validate";
 import type { Job, JobItem, GetJobsResponse, BadgeColor } from "@/lib/types";
 
 const toneColor = (t: Job["tone"]): BadgeColor =>
-  t === "Serious" ? "indigo" : "amber";
+  t === "Funny" ? "amber" : "indigo";
 const statusColor = (s: Job["status"]): BadgeColor =>
   s === "Completed" ? "emerald" : "amber";
-
-const REQUIRED_FIELDS: (keyof JobItem)[] = [
-  "id",
-  "name",
-  "report_type",
-  "tone",
-  "start_time",
-  "status",
-];
 
 const COLS = ["Job Name", "Report Type", "Tone", "Status"];
 const PER_PAGE = 10;
@@ -34,26 +22,16 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [column, setColumn] = useState(COLS[0]);
-  const [validationError, setValidationError] =
-    useState<ValidationReport | null>(null);
 
   useEffect(() => {
     apiFetch(`${API_URL}/api/report-requests/get-report-requests`)
       .then((r) => r.json())
       .then((data: GetJobsResponse) => {
-        const report = validateItems(
-          data.jobs,
-          REQUIRED_FIELDS,
-          "/api/report-requests/get-report-requests",
-        );
-        if (!report.valid) {
-          setValidationError(report);
-          return;
-        }
-        if (report.empty) {
-          setValidationError(report);
-        }
-
+        const toneMap: Record<string, Job["tone"]> = {
+          serious: "Serious",
+          funny: "Funny",
+          professional: "Professional",
+        };
         setJobs(
           data.jobs.map((item: JobItem, i: number) => {
             const d = new Date(item.start_time);
@@ -61,7 +39,7 @@ export default function JobsPage() {
               id: i + 1,
               name: item.name,
               reportType: item.report_type,
-              tone: item.tone === "comedy" ? "Comedy" : "Serious",
+              tone: toneMap[item.tone] || "Serious",
               startTime: isNaN(d.getTime())
                 ? item.start_time
                 : d.toLocaleString(),
@@ -161,7 +139,7 @@ export default function JobsPage() {
                     colSpan={6}
                     className="px-5 py-10 text-center text-sm text-t3"
                   >
-                    No jobs match your search.
+                    No jobs found.
                   </td>
                 </tr>
               ) : (
@@ -205,13 +183,6 @@ export default function JobsPage() {
         itemsPerPage={PER_PAGE}
         onPageChange={setPage}
       />
-
-      {validationError && (
-        <ApiValidationError
-          report={validationError}
-          onClose={() => setValidationError(null)}
-        />
-      )}
     </div>
   );
 }
